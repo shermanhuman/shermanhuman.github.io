@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sherman Boyd - C64 Resume</title>
-    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
     <style>
@@ -38,7 +38,7 @@
             {{ bootSequence }}
         </div>
 
-        <div v-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
+        <div v-else-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
             <div v-for="(item, index) in menuItems" :key="index" :class="{ selected: index === selectedIndex }">
                 {{ index + 1 }}. {{ item.label }}
             </div>
@@ -68,23 +68,22 @@
     </div>
 
     <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    currentScreen: 'boot',
-                    bootSequence: '',
-                    menuItems: [
-                        { label: 'VIEW RESUME', action: 'viewResume' },
-                        { label: 'VIEW BLOG', action: 'viewBlog' },
-                    ],
-                    selectedIndex: 0,
-                    resumeContent: '',
-                    blogPosts: [],
-                    blogContent: '',
-                };
-            },
-            methods: {
-                async simulateBoot() {
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const currentScreen = ref('boot');
+                const bootSequence = ref('');
+                const menuItems = ref([
+                    { label: 'VIEW RESUME', action: 'viewResume' },
+                    { label: 'VIEW BLOG', action: 'viewBlog' },
+                ]);
+                const selectedIndex = ref(0);
+                const resumeContent = ref('');
+                const blogPosts = ref([]);
+                const blogContent = ref('');
+
+                const simulateBoot = async () => {
                     const bootLines = [
                         "**** COMMODORE 64 BASIC V2 ****",
                         "64K RAM SYSTEM  38911 BASIC BYTES FREE",
@@ -97,132 +96,149 @@
                     ];
 
                     for (let i = 0; i < bootLines.length; i++) {
-                        this.bootSequence += bootLines[i] + '\n';
+                        bootSequence.value += bootLines[i] + '\n';
                         if (i >= 3) {
                             await new Promise(resolve => setTimeout(resolve, 1000));
                         }
                     }
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    this.currentScreen = 'menu';
-                },
-                handleKeydown(event) {
-                    const maxIndex = this.currentScreen === 'menu' ? this.menuItems.length - 1 : this.blogPosts.length;
+                    currentScreen.value = 'menu';
+                };
+
+                const handleKeydown = (event) => {
+                    const maxIndex = currentScreen.value === 'menu' ? menuItems.value.length - 1 : blogPosts.value.length;
                     switch (event.key) {
                         case 'ArrowUp':
-                            this.selectedIndex = (this.selectedIndex - 1 + maxIndex + 1) % (maxIndex + 1);
+                            selectedIndex.value = (selectedIndex.value - 1 + maxIndex + 1) % (maxIndex + 1);
                             break;
                         case 'ArrowDown':
-                            this.selectedIndex = (this.selectedIndex + 1) % (maxIndex + 1);
+                            selectedIndex.value = (selectedIndex.value + 1) % (maxIndex + 1);
                             break;
                         case 'Enter':
-                            if (this.currentScreen === 'menu') {
-                                this.handleMenuSelection(this.menuItems[this.selectedIndex].action);
+                            if (currentScreen.value === 'menu') {
+                                handleMenuSelection(menuItems.value[selectedIndex.value].action);
                             } else {
-                                this.handleBlogSelection(this.selectedIndex);
+                                handleBlogSelection(selectedIndex.value);
                             }
                             break;
                         default:
                             if (event.key >= '1' && event.key <= (maxIndex + 1).toString()) {
                                 const index = parseInt(event.key) - 1;
                                 if (index <= maxIndex) {
-                                    this.selectedIndex = index;
-                                    if (this.currentScreen === 'menu') {
-                                        this.handleMenuSelection(this.menuItems[index].action);
+                                    selectedIndex.value = index;
+                                    if (currentScreen.value === 'menu') {
+                                        handleMenuSelection(menuItems.value[index].action);
                                     } else {
-                                        this.handleBlogSelection(index);
+                                        handleBlogSelection(index);
                                     }
                                 }
                             }
                     }
-                },
-                async handleMenuSelection(action) {
+                };
+
+                const handleMenuSelection = async (action) => {
                     if (action === 'viewResume') {
-                        await this.loadResume();
+                        await loadResume();
                     } else if (action === 'viewBlog') {
-                        await this.loadBlogPosts();
+                        await loadBlogPosts();
                     }
-                },
-                async loadResume() {
-                    this.currentScreen = 'boot';
-                    this.bootSequence = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
+                };
+
+                const loadResume = async () => {
+                    currentScreen.value = 'boot';
+                    bootSequence.value = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
                         const response = await fetch('resume.md');
-                        this.resumeContent = await response.text();
-                        this.currentScreen = 'resume';
+                        resumeContent.value = await response.text();
+                        currentScreen.value = 'resume';
                     } catch (error) {
                         console.error('Error loading resume:', error);
-                        this.bootSequence += 'ERROR LOADING RESUME\n';
+                        bootSequence.value += 'ERROR LOADING RESUME\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.currentScreen = 'menu';
+                        currentScreen.value = 'menu';
                     }
-                },
-                async loadBlogPosts() {
-                    this.currentScreen = 'boot';
-                    this.bootSequence = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
+                };
+
+                const loadBlogPosts = async () => {
+                    currentScreen.value = 'boot';
+                    bootSequence.value = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
                         const posts = ['first-post.md', 'second-post.md', 'third-post.md'];
-                        this.blogPosts = await Promise.all(posts.map(async (post) => {
+                        blogPosts.value = await Promise.all(posts.map(async (post) => {
                             const response = await fetch(post);
                             const content = await response.text();
                             const title = content.split('\n')[0].replace('# ', '');
                             return { title, filename: post };
                         }));
-                        this.currentScreen = 'blogMenu';
-                        this.selectedIndex = 0;
+                        currentScreen.value = 'blogMenu';
+                        selectedIndex.value = 0;
                     } catch (error) {
                         console.error('Error loading blog posts:', error);
-                        this.bootSequence += 'ERROR LOADING BLOG POSTS\n';
+                        bootSequence.value += 'ERROR LOADING BLOG POSTS\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.currentScreen = 'menu';
+                        currentScreen.value = 'menu';
                     }
-                },
-                async handleBlogSelection(index) {
-                    if (index === this.blogPosts.length) {
-                        this.returnToMenu();
+                };
+
+                const handleBlogSelection = async (index) => {
+                    if (index === blogPosts.value.length) {
+                        returnToMenu();
                     } else {
-                        await this.loadBlogPost(this.blogPosts[index].filename);
+                        await loadBlogPost(blogPosts.value[index].filename);
                     }
-                },
-                async loadBlogPost(filename) {
-                    this.currentScreen = 'boot';
-                    this.bootSequence = `LOAD "${filename}",8,1\nSEARCHING FOR ${filename}\nLOADING\n`;
+                };
+
+                const loadBlogPost = async (filename) => {
+                    currentScreen.value = 'boot';
+                    bootSequence.value = `LOAD "${filename}",8,1\nSEARCHING FOR ${filename}\nLOADING\n`;
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
                         const response = await fetch(filename);
-                        this.blogContent = await response.text();
-                        this.currentScreen = 'blogPost';
+                        blogContent.value = await response.text();
+                        currentScreen.value = 'blogPost';
                     } catch (error) {
                         console.error('Error loading blog post:', error);
-                        this.bootSequence += 'ERROR LOADING BLOG POST\n';
+                        bootSequence.value += 'ERROR LOADING BLOG POST\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.currentScreen = 'blogMenu';
+                        currentScreen.value = 'blogMenu';
                     }
-                },
-                returnToMenu() {
-                    this.currentScreen = 'menu';
-                    this.selectedIndex = 0;
-                },
-                returnToBlogMenu() {
-                    this.currentScreen = 'blogMenu';
-                    this.selectedIndex = 0;
-                },
-            },
-            computed: {
-                parsedResumeContent() {
-                    return marked(this.resumeContent);
-                },
-                parsedBlogContent() {
-                    return marked(this.blogContent);
-                },
-            },
-            mounted() {
-                this.simulateBoot();
-            },
-        });
+                };
 
-        app.mount('#app');
+                const returnToMenu = () => {
+                    currentScreen.value = 'menu';
+                    selectedIndex.value = 0;
+                };
+
+                const returnToBlogMenu = () => {
+                    currentScreen.value = 'blogMenu';
+                    selectedIndex.value = 0;
+                };
+
+                const parsedResumeContent = computed(() => marked(resumeContent.value));
+                const parsedBlogContent = computed(() => marked(blogContent.value));
+
+                onMounted(() => {
+                    simulateBoot();
+                });
+
+                return {
+                    currentScreen,
+                    bootSequence,
+                    menuItems,
+                    selectedIndex,
+                    resumeContent,
+                    blogPosts,
+                    blogContent,
+                    handleKeydown,
+                    returnToMenu,
+                    returnToBlogMenu,
+                    parsedResumeContent,
+                    parsedBlogContent,
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
