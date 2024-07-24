@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sherman Boyd - C64 Resume</title>
-    <script src="https://unpkg.com/vue@next"></script>
+    <title>Sherman Boyd - C64 Resume and Blog</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @font-face {
@@ -22,6 +22,17 @@
             max-width: 800px;
             margin: 0 auto;
         }
+        button {
+            background-color: #a0a0ff;
+            color: #4040e0;
+            border: none;
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #8080ff;
+        }
     </style>
 </head>
 <body>
@@ -31,25 +42,39 @@
         </div>
         <div v-else-if="currentScreen === 'menu'">
             <p>1. VIEW RESUME</p>
-            <p>ENTER SELECTION: <button @click="showResume">1</button></p>
+            <p>2. VIEW BLOG</p>
+            <p>ENTER SELECTION: 
+                <button @click="showResume">1</button>
+                <button @click="showBlogMenu">2</button>
+            </p>
         </div>
         <div v-else-if="currentScreen === 'resume'" v-html="parsedResumeContent"></div>
+        <div v-else-if="currentScreen === 'blogMenu'">
+            <h2>BLOG POSTS:</h2>
+            <p v-for="(post, index) in blogPosts" :key="index">
+                {{ index + 1 }}. {{ post.title }}
+                <button @click="showBlogPost(post.filename)">READ</button>
+            </p>
+            <button @click="currentScreen = 'menu'">BACK TO MAIN MENU</button>
+        </div>
+        <div v-else-if="currentScreen === 'blogPost'" v-html="parsedBlogContent"></div>
     </div>
 
     <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    currentScreen: 'boot',
-                    bootPhase: 0,
-                    bootLines: [
-                        '**** COMMODORE 64 BASIC V2 ****',
-                        '64K RAM SYSTEM 38911 BASIC BYTES FREE',
-                        'READY.',
-                        'LOAD "RESUME",8,1',
-                        'SEARCHING FOR RESUME\nLOADING\nREADY.'
-                    ],
-                    resumeContent: `
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const currentScreen = ref('boot');
+                const bootPhase = ref(0);
+                const bootLines = [
+                    '**** COMMODORE 64 BASIC V2 ****',
+                    '64K RAM SYSTEM 38911 BASIC BYTES FREE',
+                    'READY.',
+                    'LOAD "RESUME",8,1',
+                    'SEARCHING FOR RESUME\nLOADING\nREADY.'
+                ];
+                const resumeContent = `
 # Sherman Boyd
 
 1040 S. Hardy Drive, Tempe AZ 85281  
@@ -83,33 +108,58 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
 - Cisco CCNA Routing and Switching (CCNA-RS) 2013-2016
 - Cisco CCNA Security (CCNA-Security) 2013-2016
 - Microsoft MCP (1998)
-                    `
-                }
-            },
-            computed: {
-                parsedResumeContent() {
-                    return marked.parse(this.resumeContent);
-                }
-            },
-            methods: {
-                boot() {
-                    if (this.bootPhase < this.bootLines.length) {
-                        this.bootPhase++;
-                        setTimeout(this.boot, this.bootPhase === 1 ? 1000 : 500);
-                    } else {
-                        this.currentScreen = 'menu';
-                    }
-                },
-                showResume() {
-                    this.currentScreen = 'resume';
-                }
-            },
-            mounted() {
-                this.boot();
-            }
-        });
+                `;
 
-        app.mount('#app');
+                const blogPosts = [
+                    { filename: 'first-post.md', title: 'My First Blog Post' },
+                    { filename: 'second-post.md', title: 'Adventures in Coding' },
+                    { filename: 'third-post.md', title: 'Reflections on Technology' }
+                ];
+
+                const currentBlogContent = ref('');
+
+                const parsedResumeContent = computed(() => marked.parse(resumeContent));
+                const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
+
+                function boot() {
+                    if (bootPhase.value < bootLines.length) {
+                        bootPhase.value++;
+                        setTimeout(boot, bootPhase.value === 1 ? 1000 : 500);
+                    } else {
+                        currentScreen.value = 'menu';
+                    }
+                }
+
+                function showResume() {
+                    currentScreen.value = 'resume';
+                }
+
+                function showBlogMenu() {
+                    currentScreen.value = 'blogMenu';
+                }
+
+                function showBlogPost(filename) {
+                    // In a real application, you would fetch the content of the blog post here.
+                    // For this example, we'll use placeholder content.
+                    currentBlogContent.value = `# ${filename.replace('.md', '')}\n\nThis is the content of the blog post.`;
+                    currentScreen.value = 'blogPost';
+                }
+
+                boot();
+
+                return {
+                    currentScreen,
+                    bootLines,
+                    bootPhase,
+                    parsedResumeContent,
+                    blogPosts,
+                    parsedBlogContent,
+                    showResume,
+                    showBlogMenu,
+                    showBlogPost
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
