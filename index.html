@@ -47,7 +47,7 @@
 </head>
 <body>
     <div id="app">
-        <div>
+        <div v-if="currentScreen === 'boot' || currentScreen === 'menu'">
             <p v-for="(line, index) in bootLines.slice(0, bootPhase)" :key="index">{{ line }}</p>
         </div>
         <div v-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
@@ -103,24 +103,23 @@
                 const bootPhase = ref(0);
                 const bootLines = [
                     '**** COMMODORE 64 BASIC V2 ****',
-                    '64K RAM SYSTEM  38911 BASIC BYTES FREE',
+                    '64K RAM SYSTEM 38911 BASIC BYTES FREE',
                     'READY.',
-                    'LOAD "MENU",8,1',
-                    'SEARCHING FOR MENU',
+                    'LOAD "MAIN-MENU",8,1',
+                    'SEARCHING FOR MAIN-MENU',
                     'LOADING',
-                    'READY.',
-                    'RUN'
+                    'READY.'
                 ];
                 const resumeContent = ref('');
                 const blogPosts = [
-                    { filename: 'first-post.prg', title: 'My First Blog Post' },
-                    { filename: 'second-post.prg', title: 'Adventures in Coding' },
-                    { filename: 'third-post.prg', title: 'Reflections on Technology' }
+                    { filename: 'first-post.md', title: 'My First Blog Post' },
+                    { filename: 'second-post.md', title: 'Adventures in Coding' },
+                    { filename: 'third-post.md', title: 'Reflections on Technology' }
                 ];
 
                 const menuItems = [
-                    { label: 'VIEW RESUME', action: () => loadContent('resume') },
-                    { label: 'VIEW BLOG', action: () => loadContent('blogMenu') }
+                    { label: 'VIEW RESUME', action: () => showResume() },
+                    { label: 'VIEW BLOG', action: () => showBlogMenu() }
                 ];
 
                 const currentBlogContent = ref('');
@@ -132,41 +131,15 @@
                 const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
 
                 function boot() {
-                    if (bootPhase.value < 3) {
-                        bootPhase.value = 3; // Instantly show first 3 lines
-                        setTimeout(continueBooting, 500);
-                    } else {
-                        continueBooting();
-                    }
-                }
-
-                function continueBooting() {
                     if (bootPhase.value < bootLines.length) {
                         bootPhase.value++;
-                        setTimeout(continueBooting, 1000);
+                        setTimeout(boot, bootPhase.value === 1 ? 2000 : 1000);
                     } else {
                         currentScreen.value = 'menu';
                         nextTick(() => {
                             menuRef.value.focus();
                         });
                     }
-                }
-
-                function loadContent(contentType) {
-                    bootPhase.value = bootLines.length - 2; // Reset to 'READY.'
-                    bootLines[bootLines.length - 4] = `LOAD "${contentType.toUpperCase()}",8,1`;
-                    bootLines[bootLines.length - 3] = `SEARCHING FOR ${contentType.toUpperCase()}`;
-                    setTimeout(() => {
-                        bootPhase.value++;
-                        setTimeout(() => {
-                            bootPhase.value++;
-                            if (contentType === 'resume') {
-                                showResume();
-                            } else if (contentType === 'blogMenu') {
-                                showBlogMenu();
-                            }
-                        }, 1000);
-                    }, 1000);
                 }
 
                 async function showResume() {
@@ -189,16 +162,17 @@
                 }
 
                 function showBlogPost(filename) {
-                    loadContent(filename);
-                    setTimeout(() => {
-                        currentBlogContent.value = `# ${filename.replace('.prg', '')}\n\nThis is the content of the blog post.`;
-                        currentScreen.value = 'blogPost';
-                        activeMenuItem.value = 0;
-                    }, 2000);
+                    currentBlogContent.value = `# ${filename.replace('.md', '')}\n\nThis is the content of the blog post.`;
+                    currentScreen.value = 'blogPost';
+                    activeMenuItem.value = 0;
                 }
 
                 function returnToMenu() {
-                    loadContent('menu');
+                    currentScreen.value = 'menu';
+                    activeMenuItem.value = 0;
+                    nextTick(() => {
+                        menuRef.value.focus();
+                    });
                 }
 
                 function handleKeydown(event) {
