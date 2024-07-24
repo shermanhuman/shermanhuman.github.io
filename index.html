@@ -11,12 +11,15 @@
             font-family: 'C64';
             src: url('https://cdn.jsdelivr.net/gh/stylebits/webfonts@v1.0.0/c64.ttf') format('truetype');
         }
-        body {
+        body, button, input, textarea, select {
             background-color: #4040e0;
             color: #a0a0ff;
             font-family: 'C64', monospace;
-            padding: 20px;
+            font-size: 16px;
             line-height: 1.6;
+        }
+        body {
+            padding: 20px;
         }
         #app {
             max-width: 800px;
@@ -37,12 +40,15 @@
             margin-top: 20px;
             cursor: pointer;
         }
+        * {
+            outline: none !important;
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <div>
-            <p v-for="(line, index) in bootLines" :key="index">{{ line }}</p>
+        <div v-if="currentScreen === 'boot' || currentScreen === 'menu'">
+            <p v-for="(line, index) in bootLines.slice(0, bootPhase)" :key="index">{{ line }}</p>
         </div>
         <div v-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
             <p v-for="(item, index) in menuItems" :key="index" 
@@ -93,7 +99,8 @@
 
         createApp({
             setup() {
-                const currentScreen = ref('menu');
+                const currentScreen = ref('boot');
+                const bootPhase = ref(0);
                 const bootLines = [
                     '**** COMMODORE 64 BASIC V2 ****',
                     '64K RAM SYSTEM 38911 BASIC BYTES FREE',
@@ -122,6 +129,18 @@
 
                 const parsedResumeContent = computed(() => marked.parse(resumeContent.value));
                 const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
+
+                function boot() {
+                    if (bootPhase.value < bootLines.length) {
+                        bootPhase.value++;
+                        setTimeout(boot, bootPhase.value === 1 ? 2000 : 1000);
+                    } else {
+                        currentScreen.value = 'menu';
+                        nextTick(() => {
+                            menuRef.value.focus();
+                        });
+                    }
+                }
 
                 async function showResume() {
                     try {
@@ -213,14 +232,13 @@
                 }
 
                 onMounted(() => {
-                    nextTick(() => {
-                        menuRef.value.focus();
-                    });
+                    boot();
                 });
 
                 return {
                     currentScreen,
                     bootLines,
+                    bootPhase,
                     parsedResumeContent,
                     blogPosts,
                     parsedBlogContent,
