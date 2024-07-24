@@ -3,254 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sherman Boyd - C64 Resume and Blog</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Sherman Boyd - C64 Resume</title>
+    <script src="https://unpkg.com/vue@next"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
     <style>
-        @font-face {
-            font-family: 'C64';
-            src: url('https://cdn.jsdelivr.net/gh/stylebits/webfonts@v1.0.0/c64.ttf') format('truetype');
-        }
-        body, button, input, textarea, select {
+        body {
             background-color: #4040e0;
             color: #a0a0ff;
-            font-family: 'C64', monospace;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        body {
+            font-family: 'VT323', monospace;
+            margin: 0;
             padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
         #app {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .menu-item {
-            padding: 5px;
-            cursor: pointer;
-        }
-        .menu-item.active {
-            background-color: #a0a0ff;
-            color: #4040e0;
-        }
-        .menu-item:focus {
+            width: 100%;
+            max-width: 640px;
+            white-space: pre-wrap;
             outline: none;
         }
-        .return-menu {
-            margin-top: 20px;
-            cursor: pointer;
-        }
-        * {
-            outline: none !important;
+        .selected {
+            background-color: #a0a0ff;
+            color: #4040e0;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="currentScreen === 'boot' || currentScreen === 'menu'">
-            <p v-for="(line, index) in bootLines.slice(0, bootPhase)" :key="index">{{ line }}</p>
+        <div v-if="currentScreen === 'boot'">
+            {{ bootSequence }}
         </div>
+
         <div v-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
-            <p v-for="(item, index) in menuItems" :key="index" 
-               :class="['menu-item', { active: index === activeMenuItem }]"
-               tabindex="0">
+            <div v-for="(item, index) in menuItems" :key="index" :class="{ selected: index === selectedIndex }">
                 {{ index + 1 }}. {{ item.label }}
-            </p>
-            <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
+            </div>
+            <div style="margin-top: 20px;">USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</div>
         </div>
+
         <div v-else-if="currentScreen === 'resume'">
             <div v-html="parsedResumeContent"></div>
-            <p class="menu-item return-menu" 
-               :class="{ active: activeMenuItem === 0 }"
-               @click="returnToMenu" 
-               @keydown="handleKeydown" 
-               tabindex="0">
-                RETURN TO MAIN MENU
-            </p>
+            <div @click="returnToMenu" style="cursor: pointer; margin-top: 20px;">RETURN TO MAIN MENU</div>
         </div>
+
         <div v-else-if="currentScreen === 'blogMenu'" @keydown="handleKeydown" tabindex="0" ref="blogMenuRef">
             <h2>BLOG POSTS:</h2>
-            <p v-for="(post, index) in blogPosts" :key="index"
-               :class="['menu-item', { active: index === activeMenuItem }]"
-               tabindex="0">
+            <div v-for="(post, index) in blogPosts" :key="index" :class="{ selected: index === selectedIndex }">
                 {{ index + 1 }}. {{ post.title }}
-            </p>
-            <p class="menu-item" 
-               :class="{ active: activeMenuItem === blogPosts.length }"
-               tabindex="0">
+            </div>
+            <div :class="{ selected: selectedIndex === blogPosts.length }">
                 {{ blogPosts.length + 1 }}. RETURN TO MAIN MENU
-            </p>
-            <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
+            </div>
+            <div style="margin-top: 20px;">USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</div>
         </div>
+
         <div v-else-if="currentScreen === 'blogPost'">
             <div v-html="parsedBlogContent"></div>
-            <p class="menu-item return-menu" 
-               :class="{ active: activeMenuItem === 0 }"
-               @click="returnToMenu" 
-               @keydown="handleKeydown" 
-               tabindex="0">
-                RETURN TO MAIN MENU
-            </p>
+            <div @click="returnToBlogMenu" style="cursor: pointer; margin-top: 20px;">RETURN TO BLOG MENU</div>
         </div>
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+        const app = Vue.createApp({
+            data() {
+                return {
+                    currentScreen: 'boot',
+                    bootSequence: '',
+                    menuItems: [
+                        { label: 'VIEW RESUME', action: 'viewResume' },
+                        { label: 'VIEW BLOG', action: 'viewBlog' },
+                    ],
+                    selectedIndex: 0,
+                    resumeContent: '',
+                    blogPosts: [],
+                    blogContent: '',
+                };
+            },
+            methods: {
+                async simulateBoot() {
+                    const bootLines = [
+                        "**** COMMODORE 64 BASIC V2 ****",
+                        "64K RAM SYSTEM  38911 BASIC BYTES FREE",
+                        "READY.",
+                        "LOAD \"MENU\",8,1",
+                        "SEARCHING FOR MENU",
+                        "LOADING",
+                        "READY.",
+                        "RUN"
+                    ];
 
-        createApp({
-            setup() {
-                const currentScreen = ref('boot');
-                const bootPhase = ref(0);
-                const bootLines = [
-                    '**** COMMODORE 64 BASIC V2 ****',
-                    '64K RAM SYSTEM 38911 BASIC BYTES FREE',
-                    'READY.',
-                    'LOAD "MAIN-MENU",8,1',
-                    'SEARCHING FOR MAIN-MENU',
-                    'LOADING',
-                    'READY.'
-                ];
-                const resumeContent = ref('');
-                const blogPosts = [
-                    { filename: 'first-post.md', title: 'My First Blog Post' },
-                    { filename: 'second-post.md', title: 'Adventures in Coding' },
-                    { filename: 'third-post.md', title: 'Reflections on Technology' }
-                ];
-
-                const menuItems = [
-                    { label: 'VIEW RESUME', action: () => showResume() },
-                    { label: 'VIEW BLOG', action: () => showBlogMenu() }
-                ];
-
-                const currentBlogContent = ref('');
-                const activeMenuItem = ref(0);
-                const menuRef = ref(null);
-                const blogMenuRef = ref(null);
-
-                const parsedResumeContent = computed(() => marked.parse(resumeContent.value));
-                const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
-
-                function boot() {
-                    if (bootPhase.value < bootLines.length) {
-                        bootPhase.value++;
-                        setTimeout(boot, bootPhase.value === 1 ? 2000 : 1000);
-                    } else {
-                        currentScreen.value = 'menu';
-                        nextTick(() => {
-                            menuRef.value.focus();
-                        });
+                    for (let i = 0; i < bootLines.length; i++) {
+                        this.bootSequence += bootLines[i] + '\n';
+                        if (i >= 3) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
                     }
-                }
-
-                async function showResume() {
-                    try {
-                        const response = await fetch('resume.md');
-                        resumeContent.value = await response.text();
-                        currentScreen.value = 'resume';
-                        activeMenuItem.value = 0;
-                    } catch (error) {
-                        console.error('Failed to load resume:', error);
-                    }
-                }
-
-                function showBlogMenu() {
-                    currentScreen.value = 'blogMenu';
-                    activeMenuItem.value = 0;
-                    nextTick(() => {
-                        blogMenuRef.value.focus();
-                    });
-                }
-
-                function showBlogPost(filename) {
-                    currentBlogContent.value = `# ${filename.replace('.md', '')}\n\nThis is the content of the blog post.`;
-                    currentScreen.value = 'blogPost';
-                    activeMenuItem.value = 0;
-                }
-
-                function returnToMenu() {
-                    currentScreen.value = 'menu';
-                    activeMenuItem.value = 0;
-                    nextTick(() => {
-                        menuRef.value.focus();
-                    });
-                }
-
-                function handleKeydown(event) {
-                    let maxIndex;
-                    switch(currentScreen.value) {
-                        case 'menu':
-                            maxIndex = menuItems.length - 1;
-                            break;
-                        case 'blogMenu':
-                            maxIndex = blogPosts.length;
-                            break;
-                        case 'resume':
-                        case 'blogPost':
-                            maxIndex = 0; // Only "RETURN TO MAIN MENU" option
-                            break;
-                    }
-
-                    switch(event.key) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    this.currentScreen = 'menu';
+                },
+                handleKeydown(event) {
+                    const maxIndex = this.currentScreen === 'menu' ? this.menuItems.length - 1 : this.blogPosts.length;
+                    switch (event.key) {
                         case 'ArrowUp':
-                        case 'ArrowLeft':
-                            activeMenuItem.value = (activeMenuItem.value - 1 + maxIndex + 1) % (maxIndex + 1);
+                            this.selectedIndex = (this.selectedIndex - 1 + maxIndex + 1) % (maxIndex + 1);
                             break;
                         case 'ArrowDown':
-                        case 'ArrowRight':
-                            activeMenuItem.value = (activeMenuItem.value + 1) % (maxIndex + 1);
+                            this.selectedIndex = (this.selectedIndex + 1) % (maxIndex + 1);
                             break;
                         case 'Enter':
-                        case 'Return':
-                            if (currentScreen.value === 'menu') {
-                                menuItems[activeMenuItem.value].action();
-                            } else if (currentScreen.value === 'blogMenu') {
-                                if (activeMenuItem.value === blogPosts.length) {
-                                    returnToMenu();
-                                } else {
-                                    showBlogPost(blogPosts[activeMenuItem.value].filename);
-                                }
+                            if (this.currentScreen === 'menu') {
+                                this.handleMenuSelection(this.menuItems[this.selectedIndex].action);
                             } else {
-                                returnToMenu();
+                                this.handleBlogSelection(this.selectedIndex);
                             }
                             break;
                         default:
                             if (event.key >= '1' && event.key <= (maxIndex + 1).toString()) {
-                                activeMenuItem.value = parseInt(event.key) - 1;
-                                if (currentScreen.value === 'menu') {
-                                    menuItems[activeMenuItem.value].action();
-                                } else if (currentScreen.value === 'blogMenu') {
-                                    if (activeMenuItem.value === blogPosts.length) {
-                                        returnToMenu();
+                                const index = parseInt(event.key) - 1;
+                                if (index <= maxIndex) {
+                                    this.selectedIndex = index;
+                                    if (this.currentScreen === 'menu') {
+                                        this.handleMenuSelection(this.menuItems[index].action);
                                     } else {
-                                        showBlogPost(blogPosts[activeMenuItem.value].filename);
+                                        this.handleBlogSelection(index);
                                     }
-                                } else {
-                                    returnToMenu();
                                 }
                             }
                     }
-                }
+                },
+                async handleMenuSelection(action) {
+                    if (action === 'viewResume') {
+                        await this.loadResume();
+                    } else if (action === 'viewBlog') {
+                        await this.loadBlogPosts();
+                    }
+                },
+                async loadResume() {
+                    this.currentScreen = 'boot';
+                    this.bootSequence = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    try {
+                        const response = await fetch('resume.md');
+                        this.resumeContent = await response.text();
+                        this.currentScreen = 'resume';
+                    } catch (error) {
+                        console.error('Error loading resume:', error);
+                        this.bootSequence += 'ERROR LOADING RESUME\n';
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        this.currentScreen = 'menu';
+                    }
+                },
+                async loadBlogPosts() {
+                    this.currentScreen = 'boot';
+                    this.bootSequence = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    try {
+                        const posts = ['first-post.md', 'second-post.md', 'third-post.md'];
+                        this.blogPosts = await Promise.all(posts.map(async (post) => {
+                            const response = await fetch(post);
+                            const content = await response.text();
+                            const title = content.split('\n')[0].replace('# ', '');
+                            return { title, filename: post };
+                        }));
+                        this.currentScreen = 'blogMenu';
+                        this.selectedIndex = 0;
+                    } catch (error) {
+                        console.error('Error loading blog posts:', error);
+                        this.bootSequence += 'ERROR LOADING BLOG POSTS\n';
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        this.currentScreen = 'menu';
+                    }
+                },
+                async handleBlogSelection(index) {
+                    if (index === this.blogPosts.length) {
+                        this.returnToMenu();
+                    } else {
+                        await this.loadBlogPost(this.blogPosts[index].filename);
+                    }
+                },
+                async loadBlogPost(filename) {
+                    this.currentScreen = 'boot';
+                    this.bootSequence = `LOAD "${filename}",8,1\nSEARCHING FOR ${filename}\nLOADING\n`;
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    try {
+                        const response = await fetch(filename);
+                        this.blogContent = await response.text();
+                        this.currentScreen = 'blogPost';
+                    } catch (error) {
+                        console.error('Error loading blog post:', error);
+                        this.bootSequence += 'ERROR LOADING BLOG POST\n';
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        this.currentScreen = 'blogMenu';
+                    }
+                },
+                returnToMenu() {
+                    this.currentScreen = 'menu';
+                    this.selectedIndex = 0;
+                },
+                returnToBlogMenu() {
+                    this.currentScreen = 'blogMenu';
+                    this.selectedIndex = 0;
+                },
+            },
+            computed: {
+                parsedResumeContent() {
+                    return marked(this.resumeContent);
+                },
+                parsedBlogContent() {
+                    return marked(this.blogContent);
+                },
+            },
+            mounted() {
+                this.simulateBoot();
+            },
+        });
 
-                onMounted(() => {
-                    boot();
-                });
-
-                return {
-                    currentScreen,
-                    bootLines,
-                    bootPhase,
-                    parsedResumeContent,
-                    blogPosts,
-                    parsedBlogContent,
-                    menuItems,
-                    activeMenuItem,
-                    handleKeydown,
-                    menuRef,
-                    blogMenuRef,
-                    returnToMenu
-                };
-            }
-        }).mount('#app');
+        app.mount('#app');
     </script>
 </body>
 </html>
