@@ -30,6 +30,9 @@
             background-color: #a0a0ff;
             color: #4040e0;
         }
+        .menu-item:focus {
+            outline: none;
+        }
         .return-menu {
             margin-top: 20px;
             cursor: pointer;
@@ -38,34 +41,50 @@
 </head>
 <body>
     <div id="app">
-        <div v-if="currentScreen === 'boot'">
-            <p v-for="(line, index) in bootLines.slice(0, bootPhase)" :key="index">{{ line }}</p>
+        <div>
+            <p v-for="(line, index) in bootLines" :key="index">{{ line }}</p>
         </div>
-        <div v-else-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
+        <div v-if="currentScreen === 'menu'" @keydown="handleKeydown" tabindex="0" ref="menuRef">
             <p v-for="(item, index) in menuItems" :key="index" 
-               :class="['menu-item', { active: index === activeMenuItem }]">
+               :class="['menu-item', { active: index === activeMenuItem }]"
+               tabindex="0">
                 {{ index + 1 }}. {{ item.label }}
             </p>
             <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
         </div>
         <div v-else-if="currentScreen === 'resume'">
             <div v-html="parsedResumeContent"></div>
-            <p class="return-menu" @click="returnToMenu" tabindex="0" @keydown.enter="returnToMenu">RETURN TO MAIN MENU</p>
+            <p class="menu-item return-menu" 
+               :class="{ active: activeMenuItem === 0 }"
+               @click="returnToMenu" 
+               @keydown="handleKeydown" 
+               tabindex="0">
+                RETURN TO MAIN MENU
+            </p>
         </div>
         <div v-else-if="currentScreen === 'blogMenu'" @keydown="handleKeydown" tabindex="0" ref="blogMenuRef">
             <h2>BLOG POSTS:</h2>
             <p v-for="(post, index) in blogPosts" :key="index"
-               :class="['menu-item', { active: index === activeMenuItem }]">
+               :class="['menu-item', { active: index === activeMenuItem }]"
+               tabindex="0">
                 {{ index + 1 }}. {{ post.title }}
             </p>
-            <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
-            <p class="menu-item" :class="{ active: activeMenuItem === blogPosts.length }">
+            <p class="menu-item" 
+               :class="{ active: activeMenuItem === blogPosts.length }"
+               tabindex="0">
                 {{ blogPosts.length + 1 }}. RETURN TO MAIN MENU
             </p>
+            <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
         </div>
         <div v-else-if="currentScreen === 'blogPost'">
             <div v-html="parsedBlogContent"></div>
-            <p class="return-menu" @click="returnToMenu" tabindex="0" @keydown.enter="returnToMenu">RETURN TO MAIN MENU</p>
+            <p class="menu-item return-menu" 
+               :class="{ active: activeMenuItem === 0 }"
+               @click="returnToMenu" 
+               @keydown="handleKeydown" 
+               tabindex="0">
+                RETURN TO MAIN MENU
+            </p>
         </div>
     </div>
 
@@ -74,8 +93,7 @@
 
         createApp({
             setup() {
-                const currentScreen = ref('boot');
-                const bootPhase = ref(0);
+                const currentScreen = ref('menu');
                 const bootLines = [
                     '**** COMMODORE 64 BASIC V2 ****',
                     '64K RAM SYSTEM 38911 BASIC BYTES FREE',
@@ -105,23 +123,12 @@
                 const parsedResumeContent = computed(() => marked.parse(resumeContent.value));
                 const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
 
-                function boot() {
-                    if (bootPhase.value < bootLines.length) {
-                        bootPhase.value++;
-                        setTimeout(boot, 2000); // 2 seconds per line
-                    } else {
-                        currentScreen.value = 'menu';
-                        nextTick(() => {
-                            menuRef.value.focus();
-                        });
-                    }
-                }
-
                 async function showResume() {
                     try {
                         const response = await fetch('resume.md');
                         resumeContent.value = await response.text();
                         currentScreen.value = 'resume';
+                        activeMenuItem.value = 0;
                     } catch (error) {
                         console.error('Failed to load resume:', error);
                     }
@@ -138,6 +145,7 @@
                 function showBlogPost(filename) {
                     currentBlogContent.value = `# ${filename.replace('.md', '')}\n\nThis is the content of the blog post.`;
                     currentScreen.value = 'blogPost';
+                    activeMenuItem.value = 0;
                 }
 
                 function returnToMenu() {
@@ -149,9 +157,19 @@
                 }
 
                 function handleKeydown(event) {
-                    const maxIndex = currentScreen.value === 'menu' 
-                        ? menuItems.length - 1 
-                        : blogPosts.length;
+                    let maxIndex;
+                    switch(currentScreen.value) {
+                        case 'menu':
+                            maxIndex = menuItems.length - 1;
+                            break;
+                        case 'blogMenu':
+                            maxIndex = blogPosts.length;
+                            break;
+                        case 'resume':
+                        case 'blogPost':
+                            maxIndex = 0; // Only "RETURN TO MAIN MENU" option
+                            break;
+                    }
 
                     switch(event.key) {
                         case 'ArrowUp':
@@ -163,6 +181,7 @@
                             activeMenuItem.value = (activeMenuItem.value + 1) % (maxIndex + 1);
                             break;
                         case 'Enter':
+                        case 'Return':
                             if (currentScreen.value === 'menu') {
                                 menuItems[activeMenuItem.value].action();
                             } else if (currentScreen.value === 'blogMenu') {
@@ -171,6 +190,8 @@
                                 } else {
                                     showBlogPost(blogPosts[activeMenuItem.value].filename);
                                 }
+                            } else {
+                                returnToMenu();
                             }
                             break;
                         default:
@@ -184,19 +205,22 @@
                                     } else {
                                         showBlogPost(blogPosts[activeMenuItem.value].filename);
                                     }
+                                } else {
+                                    returnToMenu();
                                 }
                             }
                     }
                 }
 
                 onMounted(() => {
-                    boot();
+                    nextTick(() => {
+                        menuRef.value.focus();
+                    });
                 });
 
                 return {
                     currentScreen,
                     bootLines,
-                    bootPhase,
                     parsedResumeContent,
                     blogPosts,
                     parsedBlogContent,
