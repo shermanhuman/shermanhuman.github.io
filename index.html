@@ -30,6 +30,10 @@
             background-color: #a0a0ff;
             color: #4040e0;
         }
+        .return-menu {
+            margin-top: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -44,7 +48,10 @@
             </p>
             <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
         </div>
-        <div v-else-if="currentScreen === 'resume'" v-html="parsedResumeContent"></div>
+        <div v-else-if="currentScreen === 'resume'">
+            <div v-html="parsedResumeContent"></div>
+            <p class="return-menu" @click="returnToMenu" tabindex="0" @keydown.enter="returnToMenu">RETURN TO MAIN MENU</p>
+        </div>
         <div v-else-if="currentScreen === 'blogMenu'" @keydown="handleKeydown" tabindex="0" ref="blogMenuRef">
             <h2>BLOG POSTS:</h2>
             <p v-for="(post, index) in blogPosts" :key="index"
@@ -53,10 +60,13 @@
             </p>
             <p>USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</p>
             <p class="menu-item" :class="{ active: activeMenuItem === blogPosts.length }">
-                {{ blogPosts.length + 1 }}. BACK TO MAIN MENU
+                {{ blogPosts.length + 1 }}. RETURN TO MAIN MENU
             </p>
         </div>
-        <div v-else-if="currentScreen === 'blogPost'" v-html="parsedBlogContent"></div>
+        <div v-else-if="currentScreen === 'blogPost'">
+            <div v-html="parsedBlogContent"></div>
+            <p class="return-menu" @click="returnToMenu" tabindex="0" @keydown.enter="returnToMenu">RETURN TO MAIN MENU</p>
+        </div>
     </div>
 
     <script>
@@ -75,42 +85,7 @@
                     'LOADING',
                     'READY.'
                 ];
-                const resumeContent = `
-# Sherman Boyd
-
-1040 S. Hardy Drive, Tempe AZ 85281  
-+1 (480)570-8081  
-sherman.boyd@gmail.com
-
-A strange chimera with loads of experience in network, hardware, operating systems, databases and security. I've organized teams and know how to earn customer loyalty. Seeking a team that appreciates a good generalist and servant leadership.
-
-## Experience
-
-### Orbit
-Senior Product Support Engineer, Feb 2022 to Apr 2023, San Francisco
-
-Built a customer first support organization with strong developer participation and tight customer feedback loop. Operated from first principles and focused only on the metrics that truly matter resulting in happier customers and a better product. Managed the software engineer rotation. Triaged customer facing bugs, working with engineering team to understand scope, priority and root cause. Promoted to Senior Product Support Engineer.
-
-### Torchlight Software / Applesauce Labs
-Software Engineer, April 2019 – December 2019, Phoenix
-
-Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk application project. Created custom JSON format logs (node.js) and implemented ELK stack data store including dockerized log shipper. Engineered a Kibana dashboard for consumption engagement metrics as well as application uptime. Provided developer support for OakOS, a Linux-based kiosk application platform.
-
-## Education
-- Mesa Community College (2005)
-- Scottsdale Community College (2000)
-- Burley High School (1992)
-- Infosec Institute (2013)
-
-## Certifications
-- MongoDB Certified DB Associate 2016
-- Amazon AWS ASA 2016-2018
-- Cisco CCENT (CCENT) 2013-2016
-- Cisco CCNA Routing and Switching (CCNA-RS) 2013-2016
-- Cisco CCNA Security (CCNA-Security) 2013-2016
-- Microsoft MCP (1998)
-                `;
-
+                const resumeContent = ref('');
                 const blogPosts = [
                     { filename: 'first-post.md', title: 'My First Blog Post' },
                     { filename: 'second-post.md', title: 'Adventures in Coding' },
@@ -127,13 +102,13 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                 const menuRef = ref(null);
                 const blogMenuRef = ref(null);
 
-                const parsedResumeContent = computed(() => marked.parse(resumeContent));
+                const parsedResumeContent = computed(() => marked.parse(resumeContent.value));
                 const parsedBlogContent = computed(() => marked.parse(currentBlogContent.value));
 
                 function boot() {
                     if (bootPhase.value < bootLines.length) {
                         bootPhase.value++;
-                        setTimeout(boot, 2000); // 4x slower, now 2 seconds per line
+                        setTimeout(boot, 2000); // 2 seconds per line
                     } else {
                         currentScreen.value = 'menu';
                         nextTick(() => {
@@ -142,8 +117,14 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                     }
                 }
 
-                function showResume() {
-                    currentScreen.value = 'resume';
+                async function showResume() {
+                    try {
+                        const response = await fetch('resume.md');
+                        resumeContent.value = await response.text();
+                        currentScreen.value = 'resume';
+                    } catch (error) {
+                        console.error('Failed to load resume:', error);
+                    }
                 }
 
                 function showBlogMenu() {
@@ -157,6 +138,14 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                 function showBlogPost(filename) {
                     currentBlogContent.value = `# ${filename.replace('.md', '')}\n\nThis is the content of the blog post.`;
                     currentScreen.value = 'blogPost';
+                }
+
+                function returnToMenu() {
+                    currentScreen.value = 'menu';
+                    activeMenuItem.value = 0;
+                    nextTick(() => {
+                        menuRef.value.focus();
+                    });
                 }
 
                 function handleKeydown(event) {
@@ -178,11 +167,7 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                                 menuItems[activeMenuItem.value].action();
                             } else if (currentScreen.value === 'blogMenu') {
                                 if (activeMenuItem.value === blogPosts.length) {
-                                    currentScreen.value = 'menu';
-                                    activeMenuItem.value = 0;
-                                    nextTick(() => {
-                                        menuRef.value.focus();
-                                    });
+                                    returnToMenu();
                                 } else {
                                     showBlogPost(blogPosts[activeMenuItem.value].filename);
                                 }
@@ -195,11 +180,7 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                                     menuItems[activeMenuItem.value].action();
                                 } else if (currentScreen.value === 'blogMenu') {
                                     if (activeMenuItem.value === blogPosts.length) {
-                                        currentScreen.value = 'menu';
-                                        activeMenuItem.value = 0;
-                                        nextTick(() => {
-                                            menuRef.value.focus();
-                                        });
+                                        returnToMenu();
                                     } else {
                                         showBlogPost(blogPosts[activeMenuItem.value].filename);
                                     }
@@ -223,7 +204,8 @@ Engineered an analytics infrastructure for a fortune 50 clients hardware kiosk a
                     activeMenuItem,
                     handleKeydown,
                     menuRef,
-                    blogMenuRef
+                    blogMenuRef,
+                    returnToMenu
                 };
             }
         }).mount('#app');
