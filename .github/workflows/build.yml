@@ -4,20 +4,8 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,17 +16,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: List directory contents (before build)
-        run: ls -R
-
       - name: Build
         run: |
           echo "Running build script..."
           node build.js
           echo "Build script completed."
-
-      - name: List directory contents (after build)
-        run: ls -R
 
       - name: Check for index.json
         run: |
@@ -50,14 +32,10 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update index.json" -a || echo "No changes to commit"
+          git push
