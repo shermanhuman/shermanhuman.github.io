@@ -177,6 +177,7 @@
                     try {
                         const response = await fetch('resume.md');
                         resumeContent.value = await response.text();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'resume';
                         nextTick(() => {
                             if (returnButtonRef.value) {
@@ -208,6 +209,7 @@
                             const title = content.split('\n')[0].replace('# ', '');
                             return { title, filename: post };
                         }));
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'blogMenu';
                         selectedIndex.value = 0;
                         nextTick(() => {
@@ -243,6 +245,7 @@
                     try {
                         const response = await fetch(filename);
                         blogContent.value = await response.text();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'blogPost';
                         nextTick(() => {
                             if (returnButtonRef.value) {
