@@ -176,8 +176,10 @@
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
                         const response = await fetch('resume.md');
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         resumeContent.value = await response.text();
-                        await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'resume';
                         nextTick(() => {
                             if (returnButtonRef.value) {
@@ -202,14 +204,22 @@
                     bootSequence.value = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
-                        const posts = ['first-post.md', 'second-post.md', 'third-post.md'];
-                        blogPosts.value = await Promise.all(posts.map(async (post) => {
-                            const response = await fetch(post);
-                            const content = await response.text();
-                            const title = content.split('\n')[0].replace('# ', '');
-                            return { title, filename: post };
-                        }));
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        const response = await fetch('blog/');
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const files = await response.json();
+                        blogPosts.value = await Promise.all(files
+                            .filter(file => file.endsWith('.md'))
+                            .map(async (file) => {
+                                const postResponse = await fetch(`blog/${file}`);
+                                if (!postResponse.ok) {
+                                    throw new Error(`HTTP error! status: ${postResponse.status}`);
+                                }
+                                const content = await postResponse.text();
+                                const title = content.split('\n')[0].replace('# ', '');
+                                return { title, filename: file };
+                            }));
                         currentScreen.value = 'blogMenu';
                         selectedIndex.value = 0;
                         nextTick(() => {
@@ -243,9 +253,11 @@
                     bootSequence.value = `LOAD "${filename}",8,1\nSEARCHING FOR ${filename}\nLOADING\n`;
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     try {
-                        const response = await fetch(filename);
+                        const response = await fetch(`blog/${filename}`);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         blogContent.value = await response.text();
-                        await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'blogPost';
                         nextTick(() => {
                             if (returnButtonRef.value) {
