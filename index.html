@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="app">
         <div id="screen">
@@ -14,14 +16,13 @@
                 <pre v-html="bootSequence"></pre>
             </div>
             <div id="main-menu" v-if="currentView === 'menu'">
-                <pre>
                 <h1>MAIN MENU</h1>
                 <ul>
-                    <li v-for="(item, index) in menuItems" :key="index" :class="{ 'selected': selectedMenuItem === index }">
+                    <li v-for="(item, index) in menuItems" :key="index"
+                        :class="{ 'selected': selectedMenuItem === index }">
                         {{ index + 1 }}. {{ item }}
                     </li>
                 </ul>
-                </pre>
             </div>
             <div id="resume" v-if="currentView === 'resume'">
                 <div v-html="resumeContent"></div>
@@ -47,4 +48,5 @@
     <script src="https://unpkg.com/vue@3.4.34/dist/vue.global.prod.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
