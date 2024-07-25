@@ -28,42 +28,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: List directory contents
-        run: ls -la
-
-      - name: Check for package.json
-        run: |
-          if [ -f "package.json" ]; then
-            echo "package.json exists"
-            cat package.json
-          else
-            echo "package.json does not exist"
-            exit 1
-          fi
-
-      - name: Install dependencies
-        run: |
-          if [ -f "package.json" ]; then
-            npm ci
-          else
-            echo "Skipping npm ci as package.json does not exist"
-          fi
+      - name: List directory contents (before build)
+        run: ls -R
 
       - name: Build
         run: |
           echo "Running build script..."
-          if [ -f "build.js" ]; then
-            node build.js
-            echo "Build script completed."
-            if [ -f "blog/index.json" ]; then
-              echo "Contents of blog/index.json:"
-              cat blog/index.json
-            else
-              echo "blog/index.json was not created"
-              exit 1
-            fi
+          node build.js
+          echo "Build script completed."
+
+      - name: List directory contents (after build)
+        run: ls -R
+
+      - name: Check for index.json
+        run: |
+          if [ -f "blog/index.json" ]; then
+            echo "index.json exists:"
+            cat blog/index.json
           else
-            echo "build.js does not exist"
+            echo "index.json does not exist"
             exit 1
           fi
 
