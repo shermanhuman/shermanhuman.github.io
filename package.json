@@ -1,0 +1,9 @@
+{
+     "name": "c64-inspired-resume",
+     "version": "1.0.0",
+     "description": "A Commodore 64-inspired digital resume and blog platform",
+     "scripts": {
+       "build": "node build.js"
+     }
+   }
+   
