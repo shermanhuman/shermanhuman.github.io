@@ -14,24 +14,28 @@
                 <pre v-html="bootSequence"></pre>
             </div>
             <div id="main-menu" v-if="currentView === 'menu'">
+                <pre>
                 <h1>MAIN MENU</h1>
                 <ul>
                     <li v-for="(item, index) in menuItems" :key="index" :class="{ 'selected': selectedMenuItem === index }">
                         {{ index + 1 }}. {{ item }}
                     </li>
                 </ul>
+                </pre>
             </div>
             <div id="resume" v-if="currentView === 'resume'">
                 <div v-html="resumeContent"></div>
                 <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
             <div id="blog-list" v-if="currentView === 'blogList'">
+                <pre>
                 <h1>BLOG POSTS</h1>
                 <ul>
                     <li v-for="(post, index) in blogPosts" :key="index" :class="{ 'selected': selectedBlogPost === index }">
                         {{ index + 1 }}. {{ post.title }}
                     </li>
                 </ul>
+                </pre>
                 <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
             <div id="blog-post" v-if="currentView === 'blogPost'">
