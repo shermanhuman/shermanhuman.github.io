@@ -1,9 +1,23 @@
 {
-     "name": "c64-inspired-resume",
-     "version": "1.0.0",
-     "description": "A Commodore 64-inspired digital resume and blog platform",
-     "scripts": {
-       "build": "node build.js"
-     }
-   }
-   
+  "name": "c64-resume",
+  "version": "1.0.0",
+  "description": "A Commodore 64-inspired resume website",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "marked": "^4.0.12"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shermanhuman/shermanhuman.github.io.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shermanhuman/shermanhuman.github.io/issues"
+  },
+  "homepage": "https://shermanhuman.github.io"
+}

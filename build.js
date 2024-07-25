@@ -1,27 +1,26 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
+const marked = require('marked');
 
-async function generateBlogIndex() {
-  const blogDir = path.join(__dirname, 'blog');
-  const files = await fs.readdir(blogDir);
-  
-  const posts = await Promise.all(
-    files
-      .filter(file => file.endsWith('.md'))
-      .map(async file => {
-        const content = await fs.readFile(path.join(blogDir, file), 'utf-8');
-        const title = content.split('\n')[0].replace('# ', '');
+const blogDir = path.join(__dirname, 'blog');
+const outputFile = path.join(blogDir, 'index.json');
+
+// Read all markdown files in the blog directory
+const blogPosts = fs.readdirSync(blogDir)
+    .filter(file => file.endsWith('.md'))
+    .map(file => {
+        const content = fs.readFileSync(path.join(blogDir, file), 'utf-8');
+        const tokens = marked.lexer(content);
+        const titleToken = tokens.find(token => token.type === 'heading' && token.depth === 1);
+        const title = titleToken ? titleToken.text : path.basename(file, '.md');
+
         return {
-          title,
-          file
+            title,
+            file
         };
-      })
-  );
+    });
 
-  const indexContent = JSON.stringify({ posts }, null, 2);
-  await fs.writeFile(path.join(blogDir, 'index.json'), indexContent);
+// Write the blog post metadata to index.json
+fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
 
-  console.log('Blog index generated successfully.');
-}
-
-generateBlogIndex().catch(console.error);
+console.log('Blog index generated successfully.');
