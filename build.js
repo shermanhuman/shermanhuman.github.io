@@ -1,40 +1,27 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
-const blogDir = path.join(__dirname, 'blog');
-const outputFile = path.join(blogDir, 'index.json');
+async function generateBlogIndex() {
+  const blogDir = path.join(__dirname, 'blog');
+  const files = await fs.readdir(blogDir);
+  
+  const posts = await Promise.all(
+    files
+      .filter(file => file.endsWith('.md'))
+      .map(async file => {
+        const content = await fs.readFile(path.join(blogDir, file), 'utf-8');
+        const title = content.split('\n')[0].replace('# ', '');
+        return {
+          title,
+          file
+        };
+      })
+  );
 
-console.log(`Current working directory: ${process.cwd()}`);
-console.log(`Scanning directory: ${blogDir}`);
+  const indexContent = JSON.stringify({ posts }, null, 2);
+  await fs.writeFile(path.join(blogDir, 'index.json'), indexContent);
 
-try {
-  if (!fs.existsSync(blogDir)) {
-    console.error(`Blog directory does not exist: ${blogDir}`);
-    process.exit(1);
-  }
-
-  const files = fs.readdirSync(blogDir);
-  console.log(`Files in blog directory: ${files.join(', ')}`);
-
-  const blogPosts = files
-    .filter(file => file.endsWith('.md'))
-    .map(file => {
-      console.log(`Processing file: ${file}`);
-      const content = fs.readFileSync(path.join(blogDir, file), 'utf-8');
-      const titleMatch = content.match(/^#\s+(.+)$/m);
-      const title = titleMatch ? titleMatch[1] : 'Untitled';
-      console.log(`- Title: ${title}`);
-      return {
-        filename: file,
-        title: title
-      };
-    });
-
-  console.log(`Writing output to: ${outputFile}`);
-  fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
   console.log('Blog index generated successfully.');
-  console.log(`Total blog posts processed: ${blogPosts.length}`);
-} catch (error) {
-  console.error('Error generating blog index:', error);
-  process.exit(1);
 }
+
+generateBlogIndex().catch(console.error);
