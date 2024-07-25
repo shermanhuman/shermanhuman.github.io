@@ -24,7 +24,6 @@
             width: 100%;
             max-width: 640px;
             white-space: pre-wrap;
-            outline: none;
         }
         .selected {
             background-color: #a0a0ff;
@@ -33,18 +32,23 @@
         .clickable {
             cursor: pointer;
         }
+        .menu-item {
+            outline: none;
+        }
     </style>
 </head>
 <body>
-    <div id="app" @keydown="handleKeydown" tabindex="0" ref="appRef">
+    <div id="app">
         <div v-if="currentScreen === 'boot'">
             {{ bootSequence }}
         </div>
 
-        <div v-else-if="currentScreen === 'menu'">
+        <div v-else-if="currentScreen === 'menu'" @keydown="handleKeydown">
             <div v-for="(item, index) in menuItems" :key="index" 
-                 :class="{ selected: index === selectedIndex, clickable: true }"
-                 @click="handleMenuSelection(item.action)">
+                 :class="{ selected: index === selectedIndex, clickable: true, 'menu-item': true }"
+                 @click="handleMenuSelection(item.action)"
+                 tabindex="0"
+                 :ref="el => { if (index === 0) firstMenuItemRef = el }">
                 {{ index + 1 }}. {{ item.label }}
             </div>
             <div style="margin-top: 20px;">USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</div>
@@ -52,18 +56,21 @@
 
         <div v-else-if="currentScreen === 'resume'">
             <div v-html="parsedResumeContent"></div>
-            <div @click="returnToMenu" class="clickable" style="margin-top: 20px;">RETURN TO MAIN MENU</div>
+            <div @click="returnToMenu" class="clickable" style="margin-top: 20px;" tabindex="0" ref="returnButtonRef">RETURN TO MAIN MENU</div>
         </div>
 
-        <div v-else-if="currentScreen === 'blogMenu'">
+        <div v-else-if="currentScreen === 'blogMenu'" @keydown="handleKeydown">
             <h2>BLOG POSTS:</h2>
             <div v-for="(post, index) in blogPosts" :key="index" 
-                 :class="{ selected: index === selectedIndex, clickable: true }"
-                 @click="handleBlogSelection(index)">
+                 :class="{ selected: index === selectedIndex, clickable: true, 'menu-item': true }"
+                 @click="handleBlogSelection(index)"
+                 tabindex="0"
+                 :ref="el => { if (index === 0) firstBlogItemRef = el }">
                 {{ index + 1 }}. {{ post.title }}
             </div>
-            <div :class="{ selected: selectedIndex === blogPosts.length, clickable: true }"
-                 @click="returnToMenu">
+            <div :class="{ selected: selectedIndex === blogPosts.length, clickable: true, 'menu-item': true }"
+                 @click="returnToMenu"
+                 tabindex="0">
                 {{ blogPosts.length + 1 }}. RETURN TO MAIN MENU
             </div>
             <div style="margin-top: 20px;">USE ARROW KEYS TO NAVIGATE, ENTER TO SELECT, OR PRESS NUMBER KEY</div>
@@ -71,7 +78,7 @@
 
         <div v-else-if="currentScreen === 'blogPost'">
             <div v-html="parsedBlogContent"></div>
-            <div @click="returnToBlogMenu" class="clickable" style="margin-top: 20px;">RETURN TO BLOG MENU</div>
+            <div @click="returnToBlogMenu" class="clickable" style="margin-top: 20px;" tabindex="0" ref="returnButtonRef">RETURN TO BLOG MENU</div>
         </div>
     </div>
 
@@ -90,7 +97,9 @@
                 const resumeContent = ref('');
                 const blogPosts = ref([]);
                 const blogContent = ref('');
-                const appRef = ref(null);
+                const firstMenuItemRef = ref(null);
+                const firstBlogItemRef = ref(null);
+                const returnButtonRef = ref(null);
 
                 const simulateBoot = async () => {
                     const bootLines = [
@@ -112,22 +121,29 @@
                     }
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     currentScreen.value = 'menu';
-                    nextTick(() => appRef.value.focus());
+                    nextTick(() => {
+                        if (firstMenuItemRef.value) {
+                            firstMenuItemRef.value.focus();
+                        }
+                    });
                 };
 
                 const handleKeydown = (event) => {
                     const maxIndex = currentScreen.value === 'menu' ? menuItems.value.length - 1 : blogPosts.value.length;
                     switch (event.key) {
                         case 'ArrowUp':
+                            event.preventDefault();
                             selectedIndex.value = (selectedIndex.value - 1 + maxIndex + 1) % (maxIndex + 1);
                             break;
                         case 'ArrowDown':
+                            event.preventDefault();
                             selectedIndex.value = (selectedIndex.value + 1) % (maxIndex + 1);
                             break;
                         case 'Enter':
+                            event.preventDefault();
                             if (currentScreen.value === 'menu') {
                                 handleMenuSelection(menuItems.value[selectedIndex.value].action);
-                            } else {
+                            } else if (currentScreen.value === 'blogMenu') {
                                 handleBlogSelection(selectedIndex.value);
                             }
                             break;
@@ -138,7 +154,7 @@
                                     selectedIndex.value = index;
                                     if (currentScreen.value === 'menu') {
                                         handleMenuSelection(menuItems.value[index].action);
-                                    } else {
+                                    } else if (currentScreen.value === 'blogMenu') {
                                         handleBlogSelection(index);
                                     }
                                 }
@@ -162,11 +178,21 @@
                         const response = await fetch('resume.md');
                         resumeContent.value = await response.text();
                         currentScreen.value = 'resume';
+                        nextTick(() => {
+                            if (returnButtonRef.value) {
+                                returnButtonRef.value.focus();
+                            }
+                        });
                     } catch (error) {
                         console.error('Error loading resume:', error);
                         bootSequence.value += 'ERROR LOADING RESUME\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'menu';
+                        nextTick(() => {
+                            if (firstMenuItemRef.value) {
+                                firstMenuItemRef.value.focus();
+                            }
+                        });
                     }
                 };
 
@@ -184,11 +210,21 @@
                         }));
                         currentScreen.value = 'blogMenu';
                         selectedIndex.value = 0;
+                        nextTick(() => {
+                            if (firstBlogItemRef.value) {
+                                firstBlogItemRef.value.focus();
+                            }
+                        });
                     } catch (error) {
                         console.error('Error loading blog posts:', error);
                         bootSequence.value += 'ERROR LOADING BLOG POSTS\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'menu';
+                        nextTick(() => {
+                            if (firstMenuItemRef.value) {
+                                firstMenuItemRef.value.focus();
+                            }
+                        });
                     }
                 };
 
@@ -208,22 +244,42 @@
                         const response = await fetch(filename);
                         blogContent.value = await response.text();
                         currentScreen.value = 'blogPost';
+                        nextTick(() => {
+                            if (returnButtonRef.value) {
+                                returnButtonRef.value.focus();
+                            }
+                        });
                     } catch (error) {
                         console.error('Error loading blog post:', error);
                         bootSequence.value += 'ERROR LOADING BLOG POST\n';
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         currentScreen.value = 'blogMenu';
+                        nextTick(() => {
+                            if (firstBlogItemRef.value) {
+                                firstBlogItemRef.value.focus();
+                            }
+                        });
                     }
                 };
 
                 const returnToMenu = () => {
                     currentScreen.value = 'menu';
                     selectedIndex.value = 0;
+                    nextTick(() => {
+                        if (firstMenuItemRef.value) {
+                            firstMenuItemRef.value.focus();
+                        }
+                    });
                 };
 
                 const returnToBlogMenu = () => {
                     currentScreen.value = 'blogMenu';
                     selectedIndex.value = 0;
+                    nextTick(() => {
+                        if (firstBlogItemRef.value) {
+                            firstBlogItemRef.value.focus();
+                        }
+                    });
                 };
 
                 const parsedResumeContent = computed(() => marked(resumeContent.value));
@@ -248,7 +304,9 @@
                     returnToBlogMenu,
                     parsedResumeContent,
                     parsedBlogContent,
-                    appRef,
+                    firstMenuItemRef,
+                    firstBlogItemRef,
+                    returnButtonRef,
                 };
             }
         }).mount('#app');
