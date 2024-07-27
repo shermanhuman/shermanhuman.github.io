@@ -1,22 +1,35 @@
 [
   {
-    "title": "Boys we got em",
-    "file": "fifth-post.html"
-  },
-  {
     "title": "My First Blog Post",
+    "date": "2023-07-27T00:00:00.000Z",
+    "author": "Sherman Boyd",
+    "tags": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ],
     "file": "first-post.html"
   },
   {
-    "title": "A Hot Hot Take",
-    "file": "fourth-post.html"
-  },
-  {
     "title": "Adventures in Coding",
+    "date": "2023-07-27T00:00:00.000Z",
+    "author": "Sherman Boyd",
+    "tags": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ],
     "file": "second-post.html"
   },
   {
     "title": "Reflections on Technology",
+    "date": "2023-07-27T00:00:00.000Z",
+    "author": "Sherman Boyd",
+    "tags": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ],
     "file": "third-post.html"
   }
 ]
