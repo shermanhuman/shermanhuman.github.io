@@ -42,6 +42,11 @@ const app = createApp({
             currentView.value = 'menu';
         };
 
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' });
+        };
+
         const loadResume = async () => {
             currentView.value = 'boot';
             bootSequence.value = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
@@ -61,6 +66,10 @@ const app = createApp({
                     throw new Error(`Failed to fetch blog/index.json: ${response.statusText}`);
                 }
                 blogPosts.value = await response.json();
+                // Format the date for each blog post
+                blogPosts.value.forEach(post => {
+                    post.formattedDate = formatDate(post.date);
+                });
                 currentView.value = 'blogList';
             } catch (error) {
                 console.error('Error loading blog list:', error);
@@ -142,7 +151,8 @@ const app = createApp({
             currentBlogPostContent,
             loadResume,
             loadBlogList,
-            loadBlogPost
+            loadBlogPost,
+            formatDate
         };
     }
 });

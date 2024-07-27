@@ -37,8 +37,21 @@ const blogPosts = fs.readdirSync(blogSrcDir)
 
         // Convert Markdown to HTML
         const htmlContent = marked.parse(postContent);
+        
+        // Add metadata to the top of the HTML content
+        const metadataHtml = `
+            <div class="post-metadata">
+                <p><strong>Title:</strong> ${title}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Author:</strong> ${author}</p>
+                <p><strong>Tags:</strong> ${tags.join(', ')}</p>
+            </div>
+            <hr>
+        `;
+        const htmlWithMetadata = metadataHtml + htmlContent;
+        
         const htmlFileName = file.replace('.md', '.html');
-        fs.writeFileSync(path.join(blogOutputDir, htmlFileName), htmlContent);
+        fs.writeFileSync(path.join(blogOutputDir, htmlFileName), htmlWithMetadata);
 
         return {
             title,
@@ -49,7 +62,10 @@ const blogPosts = fs.readdirSync(blogSrcDir)
         };
     });
 
-// Write the blog post metadata to index.json
+// Sort blog posts by date (most recent first)
+blogPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+// Write the sorted blog post metadata to index.json
 fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
 
 // Convert resume.md to HTML
