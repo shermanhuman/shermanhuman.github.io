@@ -7,9 +7,9 @@
     "build": "node build.js"
   },
   "dependencies": {
+    "js-yaml": "^4.1.0",
     "marked": "^4.0.12"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shermanhuman/shermanhuman.github.io.git"
