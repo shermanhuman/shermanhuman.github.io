@@ -43,13 +43,77 @@ const app = createApp({
         };
 
         const loadResume = async () => {
-            currentView.value = 'boot';
-            bootSequence.value = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            const response = await fetch('resume.md');
-            const text = await response.text();
-            resumeContent.value = marked.parse(text);
-            currentView.value = 'resume';
+            currentView.value = 'resume'; const loadResume = async () => {
+                currentView.value = 'boot';
+                bootSequence.value = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                try {
+                    const response = await fetch('resume.md');
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch resume.md: ${response.statusText}`);
+                    }
+                    const text = await response.text();
+                    resumeContent.value = marked.parse(text);
+                    currentView.value = 'resume';
+                } catch (error) {
+                    console.error('Error loading resume:', error);
+                }
+            };
+
+            const loadBlogList = async () => {
+                currentView.value = 'boot';
+                bootSequence.value = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                try {
+                    const response = await fetch('blog/index.json');
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch blog/index.json: ${response.statusText}`);
+                    }
+                    blogPosts.value = await response.json();
+                    currentView.value = 'blogList';
+                } catch (error) {
+                    console.error('Error loading blog list:', error);
+                }
+            };
+
+            const loadBlogPost = async (index) => {
+                currentView.value = 'boot';
+                bootSequence.value = `LOAD "BLOG/${blogPosts.value[index].file}",8,1\nSEARCHING FOR ${blogPosts.value[index].file}\nLOADING\n`;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                try {
+                    const response = await fetch(`blog/${blogPosts.value[index].file}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch blog post: ${response.statusText}`);
+                    }
+                    const text = await response.text();
+                    currentBlogPostContent.value = marked.parse(text);
+                    currentView.value = 'blogPost';
+                } catch (error) {
+                    console.error('Error loading blog post:', error);
+                }
+            };
+
+            const handleKeydown = (event) => {
+                if (currentView.value === 'menu') {
+                    if (event.key === 'ArrowUp') {
+                        selectedMenuItem.value = (selectedMenuItem.value - 1 + menuItems.value.length) % menuItems.value.length;
+                    } else if (event.key === 'ArrowDown') {
+                        selectedMenuItem.value = (selectedMenuItem.value + 1) % menuItems.value.length;
+                    } else if (event.key === 'Enter') {
+                        if (selectedMenuItem.value === 0) {
+                            loadResume();
+                        } else {
+                            loadBlogList();
+                        }
+                    }
+                } else if (currentView.value === 'blogList') {
+                    if (event.key === 'ArrowUp') {
+                        selectedBlogPost.value = (selectedBlogPost.value - 1 + blogPosts.value.length) % blogPosts.value.length;
+                    } else if (event.key === 'ArrowDown') {
+                        selectedBlogPost.value = (selectedBlogPost.value + 1) % blogPosts.value.length;
+                    }
+                }
+            };
         };
 
         const loadBlogList = async () => {
