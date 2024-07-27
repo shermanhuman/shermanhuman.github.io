@@ -1,9 +1,5 @@
 # Sherman Boyd
 
-1040 S. Hardy Drive, Tempe AZ 85281  
-+1 (480)570-8081  
-sherman.boyd@gmail.com
-
 A strange chimera with loads of experience in network, hardware, operating systems, databases and security. I've organized teams and know how to earn customer loyalty. Seeking a team that appreciates a good generalist and servant leadership.
 
 ## Experience
