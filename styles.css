@@ -23,7 +23,6 @@ body {
 
 #screen {
     background-color: #4040e0;
-    border: 2px solid #a0a0ff;
     padding: 20px;
     width: calc(100vw - 50px);  /* Subtract 50px (about an inch) from viewport width */
     max-width: 960px;
