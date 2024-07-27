@@ -2,14 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const marked = require('marked');
 
-const blogDir = path.join(__dirname, 'blog');
-const outputFile = path.join(blogDir, 'index.json');
+const blogSrcDir = path.join(__dirname, 'blog', 'src');
+const blogOutputDir = path.join(__dirname, 'blog');
+const outputFile = path.join(blogOutputDir, 'index.json');
+
+// Ensure the blog output directory exists
+if (!fs.existsSync(blogOutputDir)) {
+    fs.mkdirSync(blogOutputDir, { recursive: true });
+}
 
 // Read all markdown files in the blog directory
-const blogPosts = fs.readdirSync(blogDir)
+const blogPosts = fs.readdirSync(blogSrcDir)
     .filter(file => file.endsWith('.md'))
     .map(file => {
-        const content = fs.readFileSync(path.join(blogDir, file), 'utf-8');
+        const content = fs.readFileSync(path.join(blogSrcDir, file), 'utf-8');
         const tokens = marked.lexer(content);
         const titleToken = tokens.find(token => token.type === 'heading' && token.depth === 1);
         const title = titleToken ? titleToken.text : path.basename(file, '.md');
@@ -26,7 +32,7 @@ const blogPosts = fs.readdirSync(blogDir)
     });
 
 // Write the blog post metadata to index.json
-fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
+fs.writeFileSync(path.join(blogOutputDir, htmlFileName), htmlContent);
 
 // Convert resume.md to HTML
 const resumePath = path.join(__dirname, 'resume.md');
