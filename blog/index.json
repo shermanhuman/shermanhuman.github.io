@@ -1,22 +1,22 @@
 [
   {
     "title": "Boys we got em",
-    "file": "fifth-post.md"
+    "file": "fifth-post.html"
   },
   {
     "title": "My First Blog Post",
-    "file": "first-post.md"
+    "file": "first-post.html"
   },
   {
     "title": "A Hot Hot Take",
-    "file": "fourth-post.md"
+    "file": "fourth-post.html"
   },
   {
     "title": "Adventures in Coding",
-    "file": "second-post.md"
+    "file": "second-post.html"
   },
   {
     "title": "Reflections on Technology",
-    "file": "third-post.md"
+    "file": "third-post.html"
   }
 ]
