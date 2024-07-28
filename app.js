@@ -45,10 +45,10 @@ const app = createApp({
         const formatDate = (dateString) => {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', { 
-                year: '2-digit', 
+                year: 'numeric', 
                 month: '2-digit', 
                 day: '2-digit',
-                timeZone: 'UTC'  // Ensure we're using UTC
+                timeZone: 'UTC'
             });
         };
 
@@ -73,6 +73,7 @@ const app = createApp({
                 blogPosts.value = await response.json();
                 blogPosts.value.forEach(post => {
                     post.formattedDate = formatDate(post.date);
+                    post.formattedLastMod = formatDate(post.lastmod);
                 });
                 currentView.value = 'blogList';
             } catch (error) {

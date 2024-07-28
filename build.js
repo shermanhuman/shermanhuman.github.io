@@ -29,9 +29,19 @@ function parseFrontmatter(content) {
 }
 
 // Function to ensure date is parsed correctly
-function parseDate(dateString) {
-    const [year, month, day] = dateString.split('-').map(Number);
-    return new Date(Date.UTC(year, month - 1, day));  // month is 0-indexed in JS Date
+function parseDate(dateInput) {
+    if (dateInput instanceof Date) {
+        return dateInput;
+    }
+    if (typeof dateInput === 'string') {
+        // Try parsing as ISO string
+        let date = new Date(dateInput);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+    }
+    console.warn(`Invalid date input: ${dateInput}. Using current date.`);
+    return new Date();
 }
 
 // Clear existing HTML files in the blog output directory
@@ -46,10 +56,11 @@ const blogPosts = fs.readdirSync(blogSrcDir)
     .filter(file => file.endsWith('.md'))
     .map(file => {
         const content = fs.readFileSync(path.join(blogSrcDir, file), 'utf-8');
-        const { title, date, author, tags, content: postContent } = parseFrontmatter(content);
+        const { title, date, lastmod, author, tags, content: postContent, ...otherMetadata } = parseFrontmatter(content);
 
-        // Parse the date correctly
-        const parsedDate = parseDate(date);
+        // Parse the dates
+        const publishDate = parseDate(date);
+        const modifiedDate = lastmod ? parseDate(lastmod) : publishDate;
 
         // Convert Markdown to HTML
         const htmlContent = marked.parse(postContent);
@@ -58,9 +69,11 @@ const blogPosts = fs.readdirSync(blogSrcDir)
         const metadataHtml = `
             <div class="post-metadata">
                 <p><strong>Title:</strong> ${title}</p>
-                <p><strong>Date:</strong> ${parsedDate.toISOString().split('T')[0]}</p>
+                <p><strong>Publish Date:</strong> ${publishDate.toISOString()}</p>
+                <p><strong>Last Modified:</strong> ${modifiedDate.toISOString()}</p>
                 <p><strong>Author:</strong> ${author}</p>
-                <p><strong>Tags:</strong> ${tags.join(', ')}</p>
+                <p><strong>Tags:</strong> ${tags ? tags.join(', ') : ''}</p>
+                ${Object.entries(otherMetadata).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
             </div>
             <hr>
         `;
@@ -71,14 +84,16 @@ const blogPosts = fs.readdirSync(blogSrcDir)
 
         return {
             title,
-            date: parsedDate.toISOString(),  // Store as ISO string for accurate parsing in frontend
+            date: publishDate.toISOString(),
+            lastmod: modifiedDate.toISOString(),
             author,
             tags,
-            file: htmlFileName
+            file: htmlFileName,
+            ...otherMetadata
         };
     });
 
-// Sort blog posts by date (most recent first)
+// Sort blog posts by publish date (most recent first)
 blogPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // Write the sorted blog post metadata to index.json
