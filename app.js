@@ -3,6 +3,8 @@ const { createApp, ref, onMounted, watch } = Vue;
 
 const app = createApp({
     setup() {
+        console.log("Vue app setup function is running");
+
         const currentView = ref('boot');
         const bootSequence = ref('');
         const menuItems = ref(['VIEW RESUME', 'VIEW BLOG', 'INTERNET HYPERLINKS']);
@@ -45,6 +47,7 @@ const app = createApp({
         ];
 
         const typeBootSequence = async () => {
+            console.log("Starting boot sequence");
             for (let i = 0; i < 3; i++) {
                 bootSequence.value += bootLines[i] + '\n';
             }
@@ -62,6 +65,7 @@ const app = createApp({
             }
 
             await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("Boot sequence completed, changing to menu view");
             currentView.value = 'menu';
         };
 
@@ -76,15 +80,25 @@ const app = createApp({
         };
 
         const loadResume = async () => {
+            console.log("Loading resume");
             currentView.value = 'boot';
             bootSequence.value = 'LOAD "RESUME",8,1\nSEARCHING FOR RESUME\nLOADING\n';
             await new Promise(resolve => setTimeout(resolve, 1500));
-            const response = await fetch('resume.html');
-            resumeContent.value = await response.text();
-            currentView.value = 'resume';
+            try {
+                const response = await fetch('resume.html');
+                resumeContent.value = await response.text();
+                currentView.value = 'resume';
+                console.log("Resume loaded successfully");
+            } catch (error) {
+                console.error("Error loading resume:", error);
+                bootSequence.value += `\nERROR: FAILED TO LOAD RESUME\n`;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                currentView.value = 'menu';
+            }
         };
 
         const loadBlogList = async () => {
+            console.log("Loading blog list");
             currentView.value = 'boot';
             bootSequence.value = 'LOAD "BLOG",8,1\nSEARCHING FOR BLOG\nLOADING\n';
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -99,6 +113,7 @@ const app = createApp({
                     post.formattedLastMod = formatDate(post.lastmod);
                 });
                 currentView.value = 'blogList';
+                console.log("Blog list loaded successfully");
             } catch (error) {
                 console.error('Error loading blog list:', error);
                 bootSequence.value += `\nERROR: FAILED TO LOAD BLOG LIST\n`;
@@ -108,6 +123,7 @@ const app = createApp({
         };
 
         const loadBlogPost = async (index) => {
+            console.log(`Loading blog post at index ${index}`);
             currentView.value = 'boot';
             bootSequence.value = `LOAD "BLOG/${blogPosts.value[index].file}",8,1\nSEARCHING FOR ${blogPosts.value[index].file}\nLOADING\n`;
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -118,6 +134,7 @@ const app = createApp({
                 }
                 currentBlogPostContent.value = await response.text();
                 currentView.value = 'blogPost';
+                console.log("Blog post loaded successfully");
             } catch (error) {
                 console.error('Error loading blog post:', error);
                 bootSequence.value += `\nERROR: FAILED TO LOAD BLOG POST\n`;
@@ -156,12 +173,15 @@ const app = createApp({
         };
 
         const loadHyperlinks = async () => {
+            console.log("Loading hyperlinks");
             currentView.value = 'boot';
             await simulateLoading();
             currentView.value = 'hyperlinks';
+            console.log("Hyperlinks loaded");
         };
 
         const handleKeydown = (event) => {
+            console.log(`Key pressed: ${event.key}`);
             if (currentView.value === 'menu') {
                 if (event.key === 'ArrowUp') {
                     selectedMenuItem.value = (selectedMenuItem.value - 1 + menuItems.value.length) % menuItems.value.length;
@@ -204,12 +224,14 @@ const app = createApp({
         };
 
         onMounted(() => {
+            console.log("Vue app mounted, current view:", currentView.value);
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
             setInterval(animateHyperlinks, 50); // 20 fps animation, slower and smoother
         });
 
         watch(currentView, (newView) => {
+            console.log("Current view changed to:", newView);
             if (newView === 'menu' || newView === 'blogList') {
                 selectedMenuItem.value = 0;
                 selectedBlogPost.value = 0;
@@ -241,3 +263,4 @@ const app = createApp({
 });
 
 app.mount('#app');
+console.log("Vue app mounted to #app");
