@@ -4,12 +4,26 @@ const app = createApp({
     setup() {
         const currentView = ref('boot');
         const bootSequence = ref('');
-        const menuItems = ref(['VIEW RESUME', 'VIEW BLOG']);
+        const menuItems = ref(['VIEW RESUME', 'VIEW BLOG', 'INTERNET HYPERLINKS']);
         const selectedMenuItem = ref(0);
         const resumeContent = ref('');
         const blogPosts = ref([]);
         const selectedBlogPost = ref(0);
         const currentBlogPostContent = ref('');
+        const hyperlinkItems = ref([
+            { name: 'GITHUB', url: 'https://github.com/shermanhuman' },
+            { name: 'LINKEDIN', url: 'https://www.linkedin.com/in/twocell/' }
+        ]);
+        const selectedHyperlinkItem = ref(0);
+
+        const hyperlinksAsciiArt = ref([
+            "░█░█░█░█░█▀█░█▀▀░█▀▄░█░░░▀█▀░█▀█░█░█░█▀▀",
+            "░█▀█░░█░░█▀▀░█▀▀░█▀▄░█░░░░█░░█░█░█▀▄░▀▀█",
+            "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀"
+        ]);
+
+        const colorCodes = ['31', '33', '32', '36', '34', '35'];  // ANSI color codes
+        let colorIndex = 0;
 
         const bootLines = [
             '**** COMMODORE 64 BASIC V2 ****',
@@ -103,6 +117,27 @@ const app = createApp({
             }
         };
 
+        const animateHyperlinks = () => {
+            colorIndex = (colorIndex + 1) % colorCodes.length;
+            return hyperlinksAsciiArt.value.map(line => 
+                `\x1b[${colorCodes[colorIndex]}m${line}\x1b[0m`
+            ).join('\n');
+        };
+
+        const simulateLoading = async () => {
+            const loadingChars = ['|', '/', '-', '\\'];
+            for (let i = 0; i < 20; i++) {
+                bootSequence.value = `LOADING ${loadingChars[i % 4]}`;
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        };
+
+        const loadHyperlinks = async () => {
+            currentView.value = 'boot';
+            await simulateLoading();
+            currentView.value = 'hyperlinks';
+        };
+
         const handleKeydown = (event) => {
             if (currentView.value === 'menu') {
                 if (event.key === 'ArrowUp') {
@@ -112,8 +147,10 @@ const app = createApp({
                 } else if (event.key === 'Enter') {
                     if (selectedMenuItem.value === 0) {
                         loadResume();
-                    } else {
+                    } else if (selectedMenuItem.value === 1) {
                         loadBlogList();
+                    } else if (selectedMenuItem.value === 2) {
+                        loadHyperlinks();
                     }
                 }
             } else if (currentView.value === 'blogList') {
@@ -123,6 +160,16 @@ const app = createApp({
                     selectedBlogPost.value = (selectedBlogPost.value + 1) % blogPosts.value.length;
                 } else if (event.key === 'Enter') {
                     loadBlogPost(selectedBlogPost.value);
+                } else if (event.key.toLowerCase() === 'r') {
+                    currentView.value = 'menu';
+                }
+            } else if (currentView.value === 'hyperlinks') {
+                if (event.key === 'ArrowUp') {
+                    selectedHyperlinkItem.value = (selectedHyperlinkItem.value - 1 + hyperlinkItems.value.length) % hyperlinkItems.value.length;
+                } else if (event.key === 'ArrowDown') {
+                    selectedHyperlinkItem.value = (selectedHyperlinkItem.value + 1) % hyperlinkItems.value.length;
+                } else if (event.key === 'Enter') {
+                    window.open(hyperlinkItems.value[selectedHyperlinkItem.value].url, '_blank');
                 } else if (event.key.toLowerCase() === 'r') {
                     currentView.value = 'menu';
                 }
@@ -136,6 +183,11 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
+            setInterval(() => {
+                if (currentView.value === 'hyperlinks') {
+                    hyperlinksAsciiArt.value = animateHyperlinks().split('\n');
+                }
+            }, 500);
         });
 
         watch(currentView, (newView) => {
@@ -154,6 +206,9 @@ const app = createApp({
             blogPosts,
             selectedBlogPost,
             currentBlogPostContent,
+            hyperlinkItems,
+            hyperlinksAsciiArt,
+            selectedHyperlinkItem,
             loadResume,
             loadBlogList,
             loadBlogPost,

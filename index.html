@@ -33,6 +33,7 @@
                 <ul>
                     <li v-for="(post, index) in blogPosts" :key="index" :class="{ selected: index === selectedBlogPost }">
                         {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }}
+                        <br>&nbsp;&nbsp;&nbsp;Last modified: {{ post.formattedLastMod }}
                     </li>
                 </ul>
                 <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
@@ -41,6 +42,16 @@
             <div id="blog-post" v-if="currentView === 'blogPost'">
                 <div v-html="currentBlogPostContent"></div>
                 <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
+            </div>
+
+            <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
+                <pre v-for="line in hyperlinksAsciiArt">{{ line }}</pre>
+                <ul>
+                    <li v-for="(item, index) in hyperlinkItems" :key="index" :class="{ selected: index === selectedHyperlinkItem }">
+                        {{ index + 1 }}. {{ item.name }}
+                    </li>
+                </ul>
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
         </div>
     </div>
