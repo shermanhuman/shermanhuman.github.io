@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C64 Inspired Resume</title>
+    <title>C64 Style Resume</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/vue@3.4.34/dist/vue.global.prod.js"></script>
 </head>
 <body>
     <div id="app">
@@ -23,25 +24,21 @@
                 </ul>
             </div>
 
-            <div id="resume" v-if="currentView === 'resume'">
-                <div v-html="resumeContent"></div>
-                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
+            <div id="resume" v-if="currentView === 'resume'" v-html="resumeContent">
             </div>
 
             <div id="blog-list" v-if="currentView === 'blogList'">
                 <h1>BLOG POSTS</h1>
                 <ul>
                     <li v-for="(post, index) in blogPosts" :key="index" :class="{ selected: index === selectedBlogPost }">
-                        {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }}
-                        <br>&nbsp;&nbsp;&nbsp;Last modified: {{ post.formattedLastMod }}
+                        {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }}<br>
+                        Last modified: {{ post.formattedLastMod }}
                     </li>
                 </ul>
                 <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
 
-            <div id="blog-post" v-if="currentView === 'blogPost'">
-                <div v-html="currentBlogPostContent"></div>
-                <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
+            <div id="blog-post" v-if="currentView === 'blogPost'" v-html="currentBlogPostContent">
             </div>
 
             <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
@@ -55,8 +52,6 @@
             </div>
         </div>
     </div>
-
-    <script src="https://unpkg.com/vue@3.4.34/dist/vue.global.prod.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
