@@ -28,6 +28,12 @@ function parseFrontmatter(content) {
     };
 }
 
+// Function to ensure date is parsed correctly
+function parseDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));  // month is 0-indexed in JS Date
+}
+
 // Clear existing HTML files in the blog output directory
 fs.readdirSync(blogOutputDir)
     .filter(file => file.endsWith('.html'))
@@ -42,6 +48,9 @@ const blogPosts = fs.readdirSync(blogSrcDir)
         const content = fs.readFileSync(path.join(blogSrcDir, file), 'utf-8');
         const { title, date, author, tags, content: postContent } = parseFrontmatter(content);
 
+        // Parse the date correctly
+        const parsedDate = parseDate(date);
+
         // Convert Markdown to HTML
         const htmlContent = marked.parse(postContent);
         
@@ -49,7 +58,7 @@ const blogPosts = fs.readdirSync(blogSrcDir)
         const metadataHtml = `
             <div class="post-metadata">
                 <p><strong>Title:</strong> ${title}</p>
-                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Date:</strong> ${parsedDate.toISOString().split('T')[0]}</p>
                 <p><strong>Author:</strong> ${author}</p>
                 <p><strong>Tags:</strong> ${tags.join(', ')}</p>
             </div>
@@ -62,7 +71,7 @@ const blogPosts = fs.readdirSync(blogSrcDir)
 
         return {
             title,
-            date,
+            date: parsedDate.toISOString(),  // Store as ISO string for accurate parsing in frontend
             author,
             tags,
             file: htmlFileName
