@@ -24,9 +24,9 @@ const app = createApp({
         ]);
 
         const colorClasses = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
-        const positionClasses = ['position-left', 'position-center', 'position-right'];
+        const positionClass = ref('position-center');
         const colorIndex = ref(0);
-        const positionIndex = ref(0);
+        const position = ref(0);
 
         const bootLines = [
             '**** COMMODORE 64 BASIC V2 ****',
@@ -122,7 +122,15 @@ const app = createApp({
 
         const animateHyperlinks = () => {
             colorIndex.value = (colorIndex.value + 1) % colorClasses.length;
-            positionIndex.value = (positionIndex.value + 1) % positionClasses.length;
+            position.value = (position.value + 1) % 100;
+            
+            if (position.value < 25) {
+                positionClass.value = 'position-left';
+            } else if (position.value < 75) {
+                positionClass.value = 'position-center';
+            } else {
+                positionClass.value = 'position-right';
+            }
         };
 
         const simulateLoading = async () => {
@@ -184,7 +192,7 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
-            setInterval(animateHyperlinks, 500);
+            setInterval(animateHyperlinks, 50); // Increased animation frequency for smoother movement
         });
 
         watch(currentView, (newView) => {
@@ -207,9 +215,8 @@ const app = createApp({
             hyperlinksAsciiArt,
             selectedHyperlinkItem,
             colorClasses,
-            positionClasses,
+            positionClass,
             colorIndex,
-            positionIndex,
             loadResume,
             loadBlogList,
             loadBlogPost,
