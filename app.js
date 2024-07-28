@@ -20,9 +20,6 @@ const app = createApp({
         const hyperlinksAsciiArt = ref([
             "░█░█░█░█░█▀█░█▀▀░█▀▄░█░░░▀█▀░█▀█░█░█░█▀▀",
             "░█▀█░░█░░█▀▀░█▀▀░█▀▄░█░░░░█░░█░█░█▀▄░▀▀█",
-            "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀",
-            "░█░█░█░█░█▀█░█▀▀░█▀▄░█░░░▀█▀░█▀█░█░█░█▀▀",
-            "░█▀█░░█░░█▀▀░█▀▀░█▀▄░█░░░░█░░█░█░█▀▄░▀▀█",
             "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀"
         ]);
 
@@ -32,10 +29,10 @@ const app = createApp({
             ['#0000FF', '#3333FF', '#6666FF', '#9999FF', '#CCCCFF', '#EEEEFF']  // Blue gradient
         ];
 
-        const positionClass = ref('position-center');
+        const position = ref(0);
+        const direction = ref(1); // 1 for right, -1 for left
         const colorIndices = ref([5, 4, 3, 2, 1, 0]);
         const currentGradient = ref(0);
-        const position = ref(0);
 
         const bootLines = [
             '**** COMMODORE 64 BASIC V2 ****',
@@ -130,24 +127,23 @@ const app = createApp({
         };
 
         const animateHyperlinks = () => {
-            position.value = (position.value + 1) % 200;
-            
-            if (position.value < 50) {
-                positionClass.value = 'position-left';
-            } else if (position.value < 150) {
-                positionClass.value = 'position-center';
-            } else {
-                positionClass.value = 'position-right';
+            position.value += direction.value;
+
+            // Reverse direction when reaching edges
+            if (position.value >= 100 || position.value <= -100) {
+                direction.value *= -1;
             }
 
-            // Update color indices
-            for (let i = 0; i < colorIndices.value.length; i++) {
-                colorIndices.value[i] = (colorIndices.value[i] + 1) % 6;
-            }
+            // Update color indices every 10 frames (slows down color change)
+            if (position.value % 10 === 0) {
+                for (let i = 0; i < colorIndices.value.length; i++) {
+                    colorIndices.value[i] = (colorIndices.value[i] + 1) % 6;
+                }
 
-            // Change gradient every full cycle
-            if (colorIndices.value[0] === 5) {
-                currentGradient.value = (currentGradient.value + 1) % colorGradients.length;
+                // Change gradient every full cycle of colors
+                if (colorIndices.value[0] === 5) {
+                    currentGradient.value = (currentGradient.value + 1) % colorGradients.length;
+                }
             }
         };
 
@@ -210,7 +206,7 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
-            setInterval(animateHyperlinks, 20); // 50 fps animation
+            setInterval(animateHyperlinks, 50); // 20 fps animation, slower and smoother
         });
 
         watch(currentView, (newView) => {
@@ -233,9 +229,9 @@ const app = createApp({
             hyperlinksAsciiArt,
             selectedHyperlinkItem,
             colorGradients,
-            positionClass,
             colorIndices,
             currentGradient,
+            position,
             loadResume,
             loadBlogList,
             loadBlogPost,
