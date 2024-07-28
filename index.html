@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sherman Boyd - Retro Resume</title>
+    <title>Sherman Boyd - C64 Style Resume</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/vue@3.4.34/dist/vue.global.prod.js"></script>
@@ -16,8 +16,7 @@
             </div>
 
             <div id="main-menu" v-if="currentView === 'menu'">
-                MAIN MENU
-
+                <h1>MAIN MENU</h1>
                 <ul>
                     <li v-for="(item, index) in menuItems" :key="index" :class="{ selected: index === selectedMenuItem }">
                         {{ index + 1 }}. {{ item }}
@@ -27,41 +26,38 @@
 
             <div id="resume" v-if="currentView === 'resume'">
                 <div v-html="resumeContent"></div>
-                PRESS 'R' TO RETURN TO MAIN MENU
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
 
             <div id="blog-list" v-if="currentView === 'blogList'">
-                BLOG POSTS
-
+                <h1>BLOG POSTS</h1>
                 <ul>
                     <li v-for="(post, index) in blogPosts" :key="index" :class="{ selected: index === selectedBlogPost }">
                         {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }}
                         Last modified: {{ post.formattedLastMod }}
                     </li>
                 </ul>
-
-                PRESS 'R' TO RETURN TO MAIN MENU
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
 
             <div id="blog-post" v-if="currentView === 'blogPost'">
                 <div v-html="currentBlogPostContent"></div>
-                PRESS 'R' TO RETURN TO BLOG LIST
+                <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
             </div>
 
             <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
-                <pre v-for="(line, index) in hyperlinksAsciiArt" 
-                     :key="index" 
-                     :class="[colorClasses[colorIndex], positionClasses[positionIndex]]">
+                <pre v-for="(line, lineIndex) in hyperlinksAsciiArt" 
+                     :key="lineIndex" 
+                     :class="[positionClass]"
+                     :style="{ color: colorGradients[currentGradient][colorIndices[lineIndex]] }">
                     {{ line }}
                 </pre>
-
                 <ul>
                     <li v-for="(item, index) in hyperlinkItems" :key="index" :class="{ selected: index === selectedHyperlinkItem }">
                         {{ index + 1 }}. {{ item.name }}
                     </li>
                 </ul>
-
-                PRESS 'R' TO RETURN TO MAIN MENU
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
             </div>
         </div>
     </div>

@@ -20,12 +20,21 @@ const app = createApp({
         const hyperlinksAsciiArt = ref([
             "░█░█░█░█░█▀█░█▀▀░█▀▄░█░░░▀█▀░█▀█░█░█░█▀▀",
             "░█▀█░░█░░█▀▀░█▀▀░█▀▄░█░░░░█░░█░█░█▀▄░▀▀█",
+            "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀",
+            "░█░█░█░█░█▀█░█▀▀░█▀▄░█░░░▀█▀░█▀█░█░█░█▀▀",
+            "░█▀█░░█░░█▀▀░█▀▀░█▀▄░█░░░░█░░█░█░█▀▄░▀▀█",
             "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀"
         ]);
 
-        const colorClasses = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
+        const colorGradients = [
+            ['#FF0000', '#FF3333', '#FF6666', '#FF9999', '#FFCCCC', '#FFEEEE'], // Red gradient
+            ['#00FF00', '#33FF33', '#66FF66', '#99FF99', '#CCFFCC', '#EEFFEE'], // Green gradient
+            ['#0000FF', '#3333FF', '#6666FF', '#9999FF', '#CCCCFF', '#EEEEFF']  // Blue gradient
+        ];
+
         const positionClass = ref('position-center');
-        const colorIndex = ref(0);
+        const colorIndices = ref([5, 4, 3, 2, 1, 0]);
+        const currentGradient = ref(0);
         const position = ref(0);
 
         const bootLines = [
@@ -121,7 +130,6 @@ const app = createApp({
         };
 
         const animateHyperlinks = () => {
-            colorIndex.value = (colorIndex.value + 1) % colorClasses.length;
             position.value = (position.value + 1) % 200;
             
             if (position.value < 50) {
@@ -130,6 +138,16 @@ const app = createApp({
                 positionClass.value = 'position-center';
             } else {
                 positionClass.value = 'position-right';
+            }
+
+            // Update color indices
+            for (let i = 0; i < colorIndices.value.length; i++) {
+                colorIndices.value[i] = (colorIndices.value[i] + 1) % 6;
+            }
+
+            // Change gradient every full cycle
+            if (colorIndices.value[0] === 5) {
+                currentGradient.value = (currentGradient.value + 1) % colorGradients.length;
             }
         };
 
@@ -192,7 +210,7 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
-            setInterval(animateHyperlinks, 20); // Smoother animation (50 fps)
+            setInterval(animateHyperlinks, 20); // 50 fps animation
         });
 
         watch(currentView, (newView) => {
@@ -214,9 +232,10 @@ const app = createApp({
             hyperlinkItems,
             hyperlinksAsciiArt,
             selectedHyperlinkItem,
-            colorClasses,
+            colorGradients,
             positionClass,
-            colorIndex,
+            colorIndices,
+            currentGradient,
             loadResume,
             loadBlogList,
             loadBlogPost,
