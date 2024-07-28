@@ -28,6 +28,13 @@ function parseFrontmatter(content) {
     };
 }
 
+// Clear existing HTML files in the blog output directory
+fs.readdirSync(blogOutputDir)
+    .filter(file => file.endsWith('.html'))
+    .forEach(file => {
+        fs.unlinkSync(path.join(blogOutputDir, file));
+    });
+
 // Read all markdown files in the blog/src directory
 const blogPosts = fs.readdirSync(blogSrcDir)
     .filter(file => file.endsWith('.md'))
