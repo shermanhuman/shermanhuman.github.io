@@ -2,6 +2,7 @@
   {
     "title": "My First Blog Post",
     "date": "2023-03-03T00:00:00.000Z",
+    "lastmod": "2023-03-03T00:00:00.000Z",
     "author": "Sherman Boyd",
     "tags": [
       "tag1",
@@ -13,6 +14,7 @@
   {
     "title": "Adventures in Coding",
     "date": "2023-02-02T00:00:00.000Z",
+    "lastmod": "2023-02-02T00:00:00.000Z",
     "author": "Sherman Boyd",
     "tags": [
       "tag1",
@@ -24,6 +26,7 @@
   {
     "title": "Reflections on Technology",
     "date": "2023-01-01T00:00:00.000Z",
+    "lastmod": "2023-01-01T00:00:00.000Z",
     "author": "Sherman Boyd",
     "tags": [
       "tag1",
