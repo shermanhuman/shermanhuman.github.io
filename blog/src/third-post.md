@@ -1,6 +1,6 @@
 ---
 title: Reflections on Technology
-date: 2023-07-27
+date: 2023-01-01
 author: Sherman Boyd
 tags:
   - tag1

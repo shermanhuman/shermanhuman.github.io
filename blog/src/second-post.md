@@ -1,6 +1,6 @@
 ---
 title: Adventures in Coding
-date: 2023-07-27
+date: 2023-02-02
 author: Sherman Boyd
 tags:
   - tag1
