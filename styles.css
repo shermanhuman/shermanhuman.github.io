@@ -64,7 +64,9 @@ pre {
 #hyperlinks pre {
     font-size: 24px;
     line-height: 1;
-    margin-bottom: 20px;
+    margin: 0;
+    padding: 0;
+    display: block;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
