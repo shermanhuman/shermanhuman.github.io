@@ -24,9 +24,9 @@ body {
 #screen {
     background-color: #4040e0;
     padding: 20px;
-    width: calc(100vw - 50px);  /* Subtract 50px (about an inch) from viewport width */
+    width: calc(100vw - 50px);
     max-width: 960px;
-    height: calc(100vh - 50px);  /* Subtract 50px (about an inch) from viewport height */
+    height: calc(100vh - 50px);
     overflow-y: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -53,13 +53,37 @@ li {
 pre {
     white-space: pre-wrap;
     word-wrap: break-word;
-    background-color: transparent;  /* Ensure no background on pre elements */
+    background-color: transparent;
 }
 
-/* Remove focus outlines */
 *:focus {
     outline: none;
 }
+
+/* Hyperlinks page specific styles */
+#hyperlinks pre {
+    font-size: 24px;
+    line-height: 1;
+    margin-bottom: 20px;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+#hyperlinks ul {
+    margin-top: 20px;
+}
+
+/* Color classes for animation */
+.color-1 { color: #ff6b6b; }
+.color-2 { color: #feca57; }
+.color-3 { color: #48dbfb; }
+.color-4 { color: #ff9ff3; }
+.color-5 { color: #54a0ff; }
+.color-6 { color: #5f27cd; }
+
+/* Position classes for animation */
+.position-left { transform: translateX(-10px); }
+.position-center { transform: translateX(0); }
+.position-right { transform: translateX(10px); }
 
 /* Responsive adjustments */
 @media (max-width: 980px) {
@@ -69,11 +93,15 @@ pre {
     
     #screen {
         padding: 15px;
-        width: calc(100vw - 20px);  /* Adjust for smaller screens */
-        height: calc(100vh - 20px);  /* Adjust for smaller screens */
+        width: calc(100vw - 20px);
+        height: calc(100vh - 20px);
     }
     
     body, #app, #screen, h1, ul, li, pre {
         font-size: 24px;
+    }
+
+    #hyperlinks pre {
+        font-size: 18px;
     }
 }

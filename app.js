@@ -23,8 +23,10 @@ const app = createApp({
             "░▀░▀░░▀░░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀"
         ]);
 
-        const colorCodes = ['31', '33', '32', '36', '34', '35'];  // ANSI color codes
-        let colorIndex = 0;
+        const colorClasses = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
+        const positionClasses = ['position-left', 'position-center', 'position-right'];
+        const colorIndex = ref(0);
+        const positionIndex = ref(0);
 
         const bootLines = [
             '**** COMMODORE 64 BASIC V2 ****',
@@ -119,10 +121,8 @@ const app = createApp({
         };
 
         const animateHyperlinks = () => {
-            colorIndex = (colorIndex + 1) % colorCodes.length;
-            return hyperlinksAsciiArt.value.map(line => 
-                `\x1b[${colorCodes[colorIndex]}m${line}\x1b[0m`
-            ).join('\n');
+            colorIndex.value = (colorIndex.value + 1) % colorClasses.length;
+            positionIndex.value = (positionIndex.value + 1) % positionClasses.length;
         };
 
         const simulateLoading = async () => {
@@ -184,11 +184,7 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
-            setInterval(() => {
-                if (currentView.value === 'hyperlinks') {
-                    hyperlinksAsciiArt.value = animateHyperlinks().split('\n');
-                }
-            }, 500);
+            setInterval(animateHyperlinks, 500);
         });
 
         watch(currentView, (newView) => {
@@ -210,6 +206,10 @@ const app = createApp({
             hyperlinkItems,
             hyperlinksAsciiArt,
             selectedHyperlinkItem,
+            colorClasses,
+            positionClasses,
+            colorIndex,
+            positionIndex,
             loadResume,
             loadBlogList,
             loadBlogPost,
