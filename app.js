@@ -1,3 +1,4 @@
+// app.js
 const { createApp, ref, onMounted, watch } = Vue;
 
 const app = createApp({
