@@ -122,11 +122,11 @@ const app = createApp({
 
         const animateHyperlinks = () => {
             colorIndex.value = (colorIndex.value + 1) % colorClasses.length;
-            position.value = (position.value + 1) % 100;
+            position.value = (position.value + 1) % 200;
             
-            if (position.value < 25) {
+            if (position.value < 50) {
                 positionClass.value = 'position-left';
-            } else if (position.value < 75) {
+            } else if (position.value < 150) {
                 positionClass.value = 'position-center';
             } else {
                 positionClass.value = 'position-right';
@@ -192,7 +192,7 @@ const app = createApp({
         onMounted(() => {
             typeBootSequence();
             window.addEventListener('keydown', handleKeydown);
-            setInterval(animateHyperlinks, 50); // Increased animation frequency for smoother movement
+            setInterval(animateHyperlinks, 20); // Smoother animation (50 fps)
         });
 
         watch(currentView, (newView) => {
