@@ -66,7 +66,6 @@ const app = createApp({
                     throw new Error(`Failed to fetch blog/index.json: ${response.statusText}`);
                 }
                 blogPosts.value = await response.json();
-                // Format the date for each blog post
                 blogPosts.value.forEach(post => {
                     post.formattedDate = formatDate(post.date);
                 });
