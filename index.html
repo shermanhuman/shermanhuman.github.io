@@ -1,67 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sherman Boyd - C64 Style Resume</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sherman Boyd - C64 Resume</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://unpkg.com/vue@3.4.34/dist/vue.global.prod.js"></script>
-</head>
-<body>
-    <div id="app">
-        <div id="screen">
-            <div id="boot-sequence" v-if="currentView === 'boot'">
-                <pre v-html="bootSequence"></pre>
-            </div>
-
-            <div id="main-menu" v-if="currentView === 'menu'">
-                <h1>MAIN MENU</h1>
-                <ul>
-                    <li v-for="(item, index) in menuItems" :key="index" :class="{ selected: index === selectedMenuItem }">
-                        {{ index + 1 }}. {{ item }}
-                    </li>
-                </ul>
-            </div>
-
-            <div id="resume" v-if="currentView === 'resume'">
-                <div v-html="resumeContent"></div>
-                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-            </div>
-
-            <div id="blog-list" v-if="currentView === 'blogList'">
-                <h1>BLOG POSTS</h1>
-                <ul>
-                    <li v-for="(post, index) in blogPosts" :key="index" :class="{ selected: index === selectedBlogPost }">
-                        {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }}
-                        Last modified: {{ post.formattedLastMod }}
-                    </li>
-                </ul>
-                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-            </div>
-
-            <div id="blog-post" v-if="currentView === 'blogPost'">
-                <div v-html="currentBlogPostContent"></div>
-                <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
-            </div>
-
-            <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
-                <div :style="{ transform: `translateX(${position}%)`, transition: 'transform 0.05s linear' }">
-                    <pre v-for="(line, lineIndex) in hyperlinksAsciiArt" 
-                         :key="lineIndex" 
-                         :style="{ color: colorGradients[currentGradient][colorIndices[lineIndex]] }">
-                        {{ line }}
-                    </pre>
-                </div>
-                <ul>
-                    <li v-for="(item, index) in hyperlinkItems" :key="index" :class="{ selected: index === selectedHyperlinkItem }">
-                        {{ index + 1 }}. {{ item.name }}
-                    </li>
-                </ul>
-                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-            </div>
-        </div>
-    </div>
-    <script src="app.js"></script>
-</body>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>

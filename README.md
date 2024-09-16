@@ -1,103 +1,114 @@
-# shermanboyd.com
+# Commodore 64-Inspired Digital Resume and Blog Platform
 
-A little vanity site, meant to feel a bit like a retro computing experience.
+## Project Summary
 
-## How It Works
+This project is a nostalgic, Commodore 64-inspired digital resume and blog platform. It emulates the look, feel, and behavior of a Commodore 64 computer, providing an authentic retro computing experience while showcasing modern web development techniques. The site features a boot sequence, a main menu, a viewable resume, and a blog section, all presented in the iconic Commodore 64 style.
 
-The site is built using Vue.js and is designed to mimic the Commodore 64 interface. It features:
+## Code Flow
 
-1. A boot sequence that simulates the C64 startup process.
-2. A main menu for navigating between the resume and blog sections.
-3. A viewable resume pulled from a Markdown file.
-4. A blog section with posts written in Markdown and converted to HTML.
+1. **Boot Sequence**: The application starts with a simulated C64 boot sequence.
+2. **Main Menu**: After booting, the main menu is displayed with options to view the resume or blog.
+3. **Resume**: When selected, the resume content is loaded from a Markdown file and displayed.
+4. **Blog List**: The blog option shows a list of available blog posts.
+5. **Blog Post**: Selecting a blog post loads and displays its content.
 
-The site is statically generated using a Node.js build script and hosted on GitHub Pages.
+The application uses React Router for navigation and simulates C64-style loading between sections.
 
-## Folder Structure
+## Developer Setup and Instructions
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/shermanhuman/shermanhuman.github.io.git
+   cd shermanhuman.github.io
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Run the development server:
+   ```
+   npm run dev
+   ```
+
+4. Build for production:
+   ```
+   npm run build
+   ```
+
+5. Preview the production build:
+   ```
+   npm run preview
+   ```
+
+## Directory Tree
 
 ```
-/
-├── index.html
-├── app.js
-├── styles.css
-├── resume.md
-├── build.js
-├── package.json
-├── README.md
+shermanhuman.github.io/
+├── public/
+│   ├── resume.md
+│   ├── blog/
+│   │   └── (blog post .md files)
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── BlogList.tsx
+│   │   ├── BlogPost.tsx
+│   │   ├── BootSequence.tsx
+│   │   ├── C64Startup.tsx
+│   │   ├── LoadingIndicator.tsx
+│   │   ├── MainMenu.tsx
+│   │   ├── Resume.tsx
+│   │   └── TypeWriter.tsx
+│   ├── App.tsx
+│   ├── index.tsx
+│   └── styles.css
 ├── .github/
 │   └── workflows/
 │       └── build.yml
-└── blog/
-    ├── src/
-    │   ├── first-post.md
-    │   ├── second-post.md
-    │   └── ...
-    ├── first-post.html
-    ├── second-post.html
-    └── index.json
+├── package.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite.config.ts
+└── README.md
 ```
 
-- `index.html`: The main HTML file for the site.
-- `app.js`: The Vue.js application script.
-- `styles.css`: CSS styles for the C64 look and feel.
-- `resume.md`: The content of your resume in Markdown format.
-- `build.js`: Node.js script to build the site.
-- `package.json`: Node.js project file with dependencies.
-- `.github/workflows/build.yml`: GitHub Actions workflow for automatic deployment.
-- `blog/src/`: Directory containing source Markdown files for blog posts.
-- `blog/*.html`: Generated HTML files for each blog post.
-- `blog/index.json`: Generated index of all blog posts.
+## File Purposes
 
-## Metadata Structure
+- **public/resume.md**: Contains the resume content in Markdown format.
+- **public/blog/**: Directory containing individual blog post files in Markdown format.
+- **public/index.html**: The main HTML file that serves as the entry point for the application.
 
-Blog posts use YAML frontmatter for metadata. Each blog post should start with the following structure:
+- **src/components/BlogList.tsx**: Renders the list of available blog posts.
+- **src/components/BlogPost.tsx**: Displays individual blog post content.
+- **src/components/BootSequence.tsx**: Simulates the C64 boot sequence.
+- **src/components/C64Startup.tsx**: Renders the initial C64 startup screen.
+- **src/components/LoadingIndicator.tsx**: Displays a loading indicator between page transitions.
+- **src/components/MainMenu.tsx**: Renders the main menu of the application.
+- **src/components/Resume.tsx**: Displays the resume content.
+- **src/components/TypeWriter.tsx**: Provides a typewriter effect for text display.
 
-```markdown
----
-title: Your Blog Post Title
-date: YYYY-MM-DD
-author: Your Name
-tags: 
-  - tag1
-  - tag2
-  - tag3
----
+- **src/App.tsx**: The main React component that handles routing and overall app structure.
+- **src/index.tsx**: The entry point for the React application.
+- **src/styles.css**: Contains all the CSS styles for the application, including C64-specific styles.
 
-# Your Blog Post Title
+- **.github/workflows/build.yml**: GitHub Actions workflow for building and deploying the site.
 
-Your blog post content starts here...
-```
-
-## How to Post a New Blog
-
-To create a new blog post:
-
-1. Create a new Markdown file in the `blog/src/` directory. Name it with a `.md` extension (e.g., `my-new-post.md`).
-
-2. Add the YAML frontmatter at the top of the file as shown in the Metadata Structure section above.
-
-3. Write your blog post content in Markdown format below the frontmatter.
-
-4. Commit and push your new file to the GitHub repository.
-
-5. The GitHub Actions workflow will automatically run the build script, which will:
-   - Convert your Markdown file to HTML
-   - Update the `blog/index.json` file with your new post's metadata
-   - Deploy the updated site to GitHub Pages
-
-Your new blog post will now be visible on the site!
-
-## Development
-
-To set up the project for local development:
-
-1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Make changes to the source files
-4. Run `node build.js` to build the site
-5. Open `index.html` in a web browser to view your changes
+- **package.json**: Defines the project dependencies and scripts.
+- **tsconfig.json**: TypeScript configuration file.
+- **tsconfig.node.json**: TypeScript configuration for Node.js environment.
+- **vite.config.ts**: Configuration file for Vite (build tool).
+- **README.md**: This file, containing project documentation.
 
 ## Deployment
 
-Deployment is handled automatically by GitHub Actions. Any push to the `main` branch will trigger a new build and deployment to GitHub Pages.
+The project is set up to be hosted on GitHub Pages. The GitHub Actions workflow in `.github/workflows/build.yml` handles the build and deployment process automatically when changes are pushed to the main branch.
 
+## Accessibility and Responsiveness
+
+The application is designed to be keyboard accessible and responsive across different screen sizes while maintaining the C64 aesthetic. It uses semantic HTML and ARIA attributes to ensure compatibility with screen readers.
+
+## Performance
+
+The application is optimized for quick loading and smooth transitions between sections, leveraging modern web technologies while maintaining a retro look and feel.
