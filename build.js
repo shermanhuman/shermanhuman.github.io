@@ -105,7 +105,7 @@ blogPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
 fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
 
 // Convert resume.md to HTML
-const resumePath = path.join(__dirname, 'resume.md');
+const resumePath = path.join(__dirname, 'src', 'resume.md');
 const resumeContent = fs.readFileSync(resumePath, 'utf-8');
 const resumeHtml = marked.parse(resumeContent);
 fs.writeFileSync(path.join(__dirname, 'public', 'resume.html'), resumeHtml);
