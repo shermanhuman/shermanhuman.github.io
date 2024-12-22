@@ -7,8 +7,7 @@ Requirements:
 
 Hosted on Github pages: https://shermanhuman.github.io/
 Github actions build script for dynamic content.
-Use vue 3.4.34 from CDN.
-Use node v20.
+Use Docusaurus 3.6.3
 
 Visual Design:
 
@@ -34,6 +33,8 @@ Show subsequent boot lines; line by line with a delay to simulate loading:
 "SEARCHING FOR MENU"
 "LOADING"
 "READY."
+
+Display a flashing rectangular cursor for a second.
 
 After this boot sequence display the main menu.
 
