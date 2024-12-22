@@ -1,10 +1,15 @@
-const fs = require('fs');
-const path = require('path');
-const marked = require('marked');
-const yaml = require('js-yaml');
+import fs from 'fs';
+import path from 'path';
+import { marked } from 'marked';
+import yaml from 'js-yaml';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const blogSrcDir = path.join(__dirname, 'blog', 'src');
-const blogOutputDir = path.join(__dirname, 'blog');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const blogSrcDir = path.join(__dirname, 'src', 'blog');
+const blogOutputDir = path.join(__dirname, 'public', 'blog');
 const outputFile = path.join(blogOutputDir, 'index.json');
 
 // Ensure the blog output directory exists
@@ -16,7 +21,7 @@ if (!fs.existsSync(blogOutputDir)) {
 function parseFrontmatter(content) {
     const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
     const match = content.match(frontmatterRegex);
-    
+
     if (!match) return { content };
 
     const frontmatter = yaml.load(match[1]);
@@ -64,7 +69,7 @@ const blogPosts = fs.readdirSync(blogSrcDir)
 
         // Convert Markdown to HTML
         const htmlContent = marked.parse(postContent);
-        
+
         // Add metadata to the top of the HTML content
         const metadataHtml = `
             <div class="post-metadata">
@@ -78,7 +83,7 @@ const blogPosts = fs.readdirSync(blogSrcDir)
             <hr>
         `;
         const htmlWithMetadata = metadataHtml + htmlContent;
-        
+
         const htmlFileName = file.replace('.md', '.html');
         fs.writeFileSync(path.join(blogOutputDir, htmlFileName), htmlWithMetadata);
 
@@ -103,6 +108,6 @@ fs.writeFileSync(outputFile, JSON.stringify(blogPosts, null, 2));
 const resumePath = path.join(__dirname, 'resume.md');
 const resumeContent = fs.readFileSync(resumePath, 'utf-8');
 const resumeHtml = marked.parse(resumeContent);
-fs.writeFileSync(path.join(__dirname, 'resume.html'), resumeHtml);
+fs.writeFileSync(path.join(__dirname, 'public', 'resume.html'), resumeHtml);
 
 console.log('Blog index and HTML files generated successfully.');
