@@ -266,76 +266,63 @@ watch(currentView, (newView) => {
 </script>
 
 <template>
-  <div id="screen">
-    <div id="boot-sequence" v-if="currentView === 'boot'">
-      <pre v-html="bootSequence"></pre>
-    </div>
+ <div id="screen">
+            <div id="boot-sequence" v-if="currentView === 'boot'">
+                <pre v-html="bootSequence"></pre>
+            </div>
 
-    <MenuManager
-      v-if="currentView === 'menu'"
-      @loadResume="loadResume"
-      @loadBlogList="loadBlogList"
-      @loadHyperlinks="loadHyperlinks"
-      :menuItems="menuItems"
-    />
+            <MenuManager
+                v-if="currentView === 'menu'"
+                @loadResume="loadResume"
+                @loadBlogList="loadBlogList"
+                @loadHyperlinks="loadHyperlinks"
+                :menuItems="menuItems"
+            />
 
-    <div v-if="currentView === 'loading' && loading">
-        <AsciiArtTitle v-if="currentAsciiArt" :asciiArt="currentAsciiArt" :animate="currentTitle == 'INTERNET HYPERLINKS'" />
-        <h1 v-else>{{ currentTitle }}</h1>
-      <DiskLoading v-if="currentLoadingAnimation === 'disk'" />
-      <ModemLoading v-if="currentLoadingAnimation === 'modem'" />
-    </div>
+            <div v-if="currentView === 'loading' && loading">
+                <AsciiArtTitle v-if="currentAsciiArt" :asciiArt="currentAsciiArt" :animate="currentTitle == 'INTERNET HYPERLINKS'" />
+                <h1 v-else>{{ currentTitle }}</h1>
+                <DiskLoading v-if="currentLoadingAnimation === 'disk'" />
+                <ModemLoading v-if="currentLoadingAnimation === 'modem'" />
+            </div>
 
-    <div id="resume" v-if="currentView === 'resume'">
-      <div v-html="resumeContent"></div>
-      <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-    </div>
+            <div id="resume" v-if="currentView === 'resume'">
+                <div v-html="resumeContent"></div>
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
+            </div>
 
-    <div id="blog-list" v-if="currentView === 'blogList'">
-        <AsciiArtTitle v-if="currentAsciiArt" :asciiArt="currentAsciiArt" :animate="currentTitle == 'INTERNET HYPERLINKS'"/>
-        <h1 v-else>{{ currentTitle }}</h1>
-      <ul>
-        <li
-          v-for="(post, index) in blogPosts"
-          :key="index"
-          :class="{ selected: index === selectedBlogPost }"
-        >
-          {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }} Last modified: {{ post.formattedLastMod }}
-        </li>
-      </ul>
-      <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-    </div>
+            <div id="blog-list" v-if="currentView === 'blogList'">
+                <AsciiArtTitle v-if="currentAsciiArt" :asciiArt="currentAsciiArt" :animate="currentTitle == 'INTERNET HYPERLINKS'"/>
+                <h1 v-else>{{ currentTitle }}</h1>
+                <ul>
+                    <li
+                        v-for="(post, index) in blogPosts"
+                        :key="index"
+                        :class="{ selected: index === selectedBlogPost }"
+                    >
+                        {{ index + 1 }}. [{{ post.formattedDate }}] {{ post.title }} Last modified: {{ post.formattedLastMod }}
+                    </li>
+                </ul>
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
+            </div>
 
-    <div id="blog-post" v-if="currentView === 'blogPost'">
-      <div v-html="currentBlogPostContent"></div>
-      <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
-    </div>
+            <div id="blog-post" v-if="currentView === 'blogPost'">
+                <div v-html="currentBlogPostContent"></div>
+                <p>PRESS 'R' TO RETURN TO BLOG LIST</p>
+            </div>
 
-    <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
-      <div
-        :style="{
-          transform: `translateX(${position}%)`,
-          transition: 'transform 0.05s linear',
-        }"
-      >
-        <pre
-          v-for="(line, lineIndex) in hyperlinksAsciiArt"
-          :key="lineIndex"
-          :style="{
-            color: colorGradients[currentGradient][colorIndices[lineIndex]],
-          }"
-        >{{ line }}</pre>
-      </div>
-      <ul>
-        <li
-          v-for="(item, index) in hyperlinkItems"
-          :key="index"
-          :class="{ selected: index === selectedHyperlinkItem }"
-        >
-          {{ index + 1 }}. {{ item.name }}
-        </li>
-      </ul>
-      <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
-    </div>
-  </div>
+            <div id="hyperlinks" v-if="currentView === 'hyperlinks'">
+                <AsciiArtTitle :asciiArt="hyperlinksAsciiArt" :animate="true" />
+                <ul>
+                    <li
+                        v-for="(item, index) in hyperlinkItems"
+                        :key="index"
+                        :class="{ selected: index === selectedHyperlinkItem }"
+                    >
+                        {{ index + 1 }}. {{ item.name }}
+                    </li>
+                </ul>
+                <p>PRESS 'R' TO RETURN TO MAIN MENU</p>
+            </div>
+        </div>
 </template>
