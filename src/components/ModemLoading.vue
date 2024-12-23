@@ -12,7 +12,7 @@ const connectionMessages = [
 
 onMounted(() => {
   const connectionInterval = setInterval(() => {
-    if (connectionStage.value < connectionMessages.value.length - 1) {
+    if (connectionStage.value < connectionMessages.length - 1) {
       connectionStage.value++;
     }
   }, 1000);
@@ -23,7 +23,7 @@ onMounted(() => {
 
 <template>
   <div class="modem-loading">
-    <pre>{{ connectionMessages.value[connectionStage.value] }}</pre>
+    <pre>{{ connectionMessages[connectionStage.value] }}</pre>
   </div>
 </template>
 
